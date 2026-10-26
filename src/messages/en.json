@@ -1,0 +1,42 @@
+{
+  "Metadata": {
+    "title": "Zina Al Mokri",
+    "description": "Curated beauty and lifestyle selections by Zina Al Mokri."
+  },
+  "Navigation": {
+    "label": "Main",
+    "home": "Home",
+    "products": "Products",
+    "about": "About",
+    "cart": "Cart"
+  },
+  "LanguageSwitcher": {
+    "label": "Language"
+  },
+  "HomePage": {
+    "eyebrow": "Foundation preview",
+    "title": "Zina Al Mokri",
+    "subtitle": "Quiet luxury, carefully chosen."
+  },
+  "ProductsPage": {
+    "title": "Products",
+    "body": "The collection will appear here."
+  },
+  "ProductPage": {
+    "title": "Product",
+    "body": "Details for “{slug}” will appear here."
+  },
+  "AboutPage": {
+    "title": "About",
+    "body": "The story behind the selection will appear here."
+  },
+  "CartPage": {
+    "title": "Your cart",
+    "body": "Your cart is empty."
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "body": "The page you are looking for does not exist.",
+    "back": "Back to home"
+  }
+}

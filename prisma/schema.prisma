@@ -1,0 +1,133 @@
+// Prisma ORM 7: connection URL lives in prisma.config.ts; the runtime client uses @prisma/adapter-pg.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrderStatus {
+  PENDING_REVIEW
+  AWAITING_PAYMENT
+  APPROVED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  CARD
+  WHATSAPP
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  logoUrl   String?
+  website   String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  nameEn        String
+  nameAr        String
+  descriptionEn String?        @db.Text
+  descriptionAr String?        @db.Text
+  reviewEn      String?        @db.Text
+  reviewAr      String?        @db.Text
+  /// Owner's rating, e.g. 4.5 (0.0–5.0)
+  rating        Decimal?       @db.Decimal(2, 1)
+  price         Decimal        @db.Decimal(10, 2)
+  /// ISO 4217 code
+  currency      String         @default("USD") @db.Char(3)
+  /// null = stock not tracked
+  stock         Int?
+  isPublished   Boolean        @default(false)
+  brandId       String
+  brand         Brand          @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  images        ProductImage[]
+  orderItems    OrderItem[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([isPublished])
+  @@index([brandId])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  altEn     String
+  altAr     String
+  sortOrder Int     @default(0)
+
+  @@index([productId, sortOrder])
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  /// Human-readable reference shown to customers, e.g. "ZM-2026-00042"
+  orderNumber   String        @unique
+  status        OrderStatus   @default(PENDING_REVIEW)
+  customerName  String
+  email         String
+  phone         String
+  whatsapp      String?
+  /// ISO 3166-1 alpha-2
+  country       String        @db.Char(2)
+  city          String
+  addressLine1  String
+  addressLine2  String?
+  postalCode    String?
+  notes         String?       @db.Text
+  paymentMethod PaymentMethod
+  subtotal      Decimal       @db.Decimal(10, 2)
+  /// null until an admin reviews the order and sets shipping
+  shippingFee   Decimal?      @db.Decimal(10, 2)
+  /// null until shippingFee is known
+  total         Decimal?      @db.Decimal(10, 2)
+  /// ISO 4217 code
+  currency      String        @db.Char(3)
+  /// UI locale the order was placed in ("en" | "ar")
+  locale        String
+  items         OrderItem[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  approvedAt    DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id                  String  @id @default(cuid())
+  orderId             String
+  order               Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId           String
+  product             Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  /// Product name at time of purchase, so history survives renames
+  productNameSnapshot String
+  unitPrice           Decimal @db.Decimal(10, 2)
+  quantity            Int
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+}

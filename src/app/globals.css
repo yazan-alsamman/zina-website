@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+/*
+ * Quiet Luxury design tokens. Documented with contrast ratios in docs/design-tokens.md.
+ * Sand is a surface/accent colour only: never use it for body text on light backgrounds.
+ */
+@theme {
+  /* Reset Tailwind's default palette; only brand colours exist in this project. */
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-white: #ffffff;
+  --color-mist: #eaeaea;
+  --color-sand: #b8a48f;
+  --color-mocha: #4a3f35;
+  --color-ink: #000000;
+
+  /* Derived tints & shades */
+  --color-sand-100: #f1ede9;
+  --color-sand-200: #dcd2c7;
+  --color-sand-700: #7c6c5e;
+  --color-mocha-300: #aea9a4;
+  --color-mocha-800: #342c25;
+  --color-mocha-900: #211c18;
+
+  /* Fluid type scale (min @ 390px → max @ 1440px) */
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.5;
+  --text-caption--letter-spacing: 0.08em;
+  --text-body: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --text-body--line-height: 1.7;
+  --text-lead: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
+  --text-lead--line-height: 1.6;
+  --text-h3: clamp(1.5rem, 1.36rem + 0.57vw, 2rem);
+  --text-h3--line-height: 1.25;
+  --text-h2: clamp(2rem, 1.71rem + 1.14vw, 3rem);
+  --text-h2--line-height: 1.15;
+  --text-h1: clamp(2.75rem, 2.2rem + 2.29vw, 4.75rem);
+  --text-h1--line-height: 1.05;
+  --text-display: clamp(3.5rem, 2.5rem + 4.19vw, 7.5rem);
+  --text-display--line-height: 0.95;
+  --text-display--letter-spacing: -0.01em;
+
+  /* Spacing: Tailwind's 4px base plus semantic layout steps */
+  --spacing: 0.25rem;
+  --spacing-gutter: clamp(1rem, 0.6rem + 1.9vw, 2.5rem);
+  --spacing-section: clamp(4rem, 2.9rem + 4.6vw, 9rem);
+
+  --container-content: 72rem;
+  --container-prose: 38rem;
+
+  /* Easing curves */
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-silk: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Font families switch per locale; next/font variables are applied on <html>. */
+@theme inline {
+  --font-display: var(--ff-display);
+  --font-sans: var(--ff-body);
+  --font-latin-display: var(--font-cormorant), "Times New Roman", serif;
+}
+
+:root {
+  --ff-display: var(--font-cormorant), "Times New Roman", serif;
+  --ff-body: var(--font-jost), system-ui, sans-serif;
+
+  --duration-fast: 200ms;
+  --duration-base: 500ms;
+  --duration-slow: 900ms;
+
+  color-scheme: light;
+}
+
+:root:lang(ar) {
+  /* Arabic faces first; Latin glyphs (brand name, numerals) fall through to the EN faces. */
+  --ff-display: var(--font-naskh), var(--font-cormorant), serif;
+  --ff-body: var(--font-plex-arabic), var(--font-jost), system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-white font-sans text-body text-mocha antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-normal text-balance;
+  }
+
+  :lang(ar) body {
+    /* Arabic script needs more vertical room than Latin. */
+    line-height: 1.85;
+  }
+
+  ::selection {
+    @apply bg-sand-200 text-mocha-900;
+  }
+
+  :focus-visible {
+    outline: 1px solid var(--color-mocha);
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

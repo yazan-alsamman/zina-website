@@ -1,0 +1,42 @@
+{
+  "Metadata": {
+    "title": "Zina Al Mokri",
+    "description": "مختارات منتقاة بعناية في الجمال وأسلوب الحياة من Zina Al Mokri."
+  },
+  "Navigation": {
+    "label": "القائمة الرئيسية",
+    "home": "الرئيسية",
+    "products": "المنتجات",
+    "about": "من نحن",
+    "cart": "السلة"
+  },
+  "LanguageSwitcher": {
+    "label": "اللغة"
+  },
+  "HomePage": {
+    "eyebrow": "معاينة الأساس",
+    "title": "Zina Al Mokri",
+    "subtitle": "فخامة هادئة، مختارة بعناية."
+  },
+  "ProductsPage": {
+    "title": "المنتجات",
+    "body": "ستظهر المجموعة هنا."
+  },
+  "ProductPage": {
+    "title": "المنتج",
+    "body": "ستظهر تفاصيل «{slug}» هنا."
+  },
+  "AboutPage": {
+    "title": "من نحن",
+    "body": "ستظهر هنا قصة هذه المختارات."
+  },
+  "CartPage": {
+    "title": "سلة التسوق",
+    "body": "سلتك فارغة."
+  },
+  "NotFound": {
+    "title": "الصفحة غير موجودة",
+    "body": "الصفحة التي تبحث عنها غير موجودة.",
+    "back": "العودة إلى الرئيسية"
+  }
+}

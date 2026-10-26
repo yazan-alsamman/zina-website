@@ -1,0 +1,10 @@
+.next/
+node_modules/
+src/generated/
+prisma/migrations/
+package-lock.json
+skills-lock.json
+.claude/
+docs/screenshots/
+assets/
+.mcp.json

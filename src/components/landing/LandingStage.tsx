@@ -15,7 +15,7 @@ const LandingCanvas = dynamic(() => import("@/components/three/landing/LandingCa
  * One fixed stage behind the whole page. A CSS backdrop with the same atmosphere paints first;
  * the WebGL scene mounts after first paint, so hero text never waits for 3D.
  */
-export function LandingStage() {
+export function LandingStage({ houseNames }: { houseNames: readonly string[] }) {
   const [mountCanvas, setMountCanvas] = useState(false);
   const stageActive = useLandingStore((s) => s.stageActive);
 
@@ -71,7 +71,7 @@ export function LandingStage() {
       style={{ visibility: stageActive ? "visible" : "hidden" }}
     >
       <div className="stage-backdrop absolute inset-0" />
-      {mountCanvas ? <LandingCanvas /> : null}
+      {mountCanvas ? <LandingCanvas houseNames={houseNames} /> : null}
     </div>
   );
 }

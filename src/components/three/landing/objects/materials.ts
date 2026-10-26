@@ -8,17 +8,30 @@ export function useHeroMaterials(tier: DeviceTier) {
   const materials = useMemo(() => {
     const high = tier === "high";
 
+    // Deep piano lacquer: a satin mocha base under a mirror-like clear coat, with a warm sheen
+    // that lifts the silhouette against the night backdrop.
     const lacquer = new MeshPhysicalMaterial({
       color: palette.mocha,
-      roughness: 0.32,
+      roughness: 0.22,
       clearcoat: 1,
-      clearcoatRoughness: 0.06,
+      clearcoatRoughness: 0.02,
+      specularIntensity: 1,
+      specularColor: new Color(palette.sand100),
+      sheen: 0.35,
+      sheenRoughness: 0.5,
+      sheenColor: new Color(palette.sand),
+      envMapIntensity: 1.7,
     });
 
+    // Brushed champagne gold. Lathe UVs run around the circumference, so anisotropy along U
+    // reads as fine turned rings, like machined cosmetic packaging.
     const champagne = new MeshPhysicalMaterial({
       color: palette.sand200,
       metalness: 1,
-      roughness: 0.2,
+      roughness: 0.3,
+      anisotropy: high ? 0.85 : 0.5,
+      anisotropyRotation: 0,
+      envMapIntensity: 1.55,
     });
 
     const bullet = new MeshPhysicalMaterial({

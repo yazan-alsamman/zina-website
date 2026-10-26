@@ -10,6 +10,9 @@ export function StudioLights() {
       <ambientLight intensity={0.35} color={palette.sand200} />
       <directionalLight position={[4, 6, 6]} intensity={1.8} color="#fff6ec" />
       <directionalLight position={[-6, -2, 3]} intensity={0.45} color={palette.sand} />
+      {/* Warm rim lights from behind: the edge glow of packaging photography */}
+      <directionalLight position={[-4, 3, -6]} intensity={2.4} color="#f3e2cc" />
+      <directionalLight position={[5, -1, -5]} intensity={1.2} color={palette.sand} />
 
       <Environment resolution={256} frames={1} environmentIntensity={1}>
         {/* Warm room tone: metals and glass reflect mocha instead of a black void */}
@@ -48,6 +51,14 @@ export function StudioLights() {
           position={[5, 0, 1]}
           scale={[1.2, 9, 1]}
           rotation-y={-Math.PI / 2}
+        />
+        {/* Back strip: rim reflections along lacquer and metal edges */}
+        <Lightformer
+          form="rect"
+          intensity={2.2}
+          color={palette.sand}
+          position={[0, 1, -8]}
+          scale={[16, 1.4, 1]}
         />
         {/* Front catchlight */}
         <Lightformer

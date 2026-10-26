@@ -4,52 +4,39 @@ import { Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { MathUtils, type Mesh } from "three";
-import { brands } from "@/config/brands";
 import { useLandingStore } from "@/lib/landing-store";
-import { palette } from "./palette";
+import { layoutConstellation } from "./constellation-layout";
+import { CONSTELLATION_FOCUS, JOURNEY_LENGTH, JOURNEY_START_Z, journeySway } from "./journey";
+import { HERO_FOV, palette } from "./palette";
 
 export const FONT_URL = "/fonts/cormorant-garamond-400.woff";
-export const JOURNEY_START_Z = -3;
-export const JOURNEY_SPACING = 2.75;
+const LOW_TIER_COUNT = 10;
+const COLORS = [palette.white, palette.sand200, palette.sand100, palette.sand];
 
-const COLORS = [palette.white, palette.sand200, palette.sand, palette.sand100];
-
-// Deterministic pseudo-random so the constellation is identical on every visit.
-const rand = (seed: number) => {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
+type TroikaText = Mesh & {
+  fillOpacity: number;
+  textRenderInfo?: { blockBounds: [number, number, number, number] };
 };
 
-type TroikaText = Mesh & { fillOpacity: number };
-
-export function BrandConstellation() {
+export function BrandConstellation({ names }: { names: readonly string[] }) {
   const tier = useLandingStore((s) => s.tier);
-  const aspect = useThree((s) => s.size.width / s.size.height);
+  const size = useThree((s) => s.size);
   const refs = useRef<Array<TroikaText | null>>([]);
 
-  const items = useMemo(() => {
-    const list = tier === "high" ? brands : brands.filter((b) => b.priority === 1);
-    const wide = aspect >= 1;
-    const spreadX = wide ? 1 : 0.42;
-    // Portrait screens put the copy higher (lower ~45 %), so both lanes sit higher there.
-    const lanes = wide ? [1.25, 0.25] : [1.6, 0.8];
-    return list.map((brand, i) => {
-      const side = i % 2 === 0 ? -1 : 1;
-      // Names on the same side alternate between a high and a low lane so consecutive names never
-      // stack on screen, and both lanes stay above the copy block in the lower third.
-      const lane = lanes[Math.floor(i / 2) % 2];
-      return {
-        brand,
-        position: [
-          side * (1.3 + rand(i) * 1.6) * spreadX,
-          lane + (rand(i + 11) - 0.5) * 0.45,
-          JOURNEY_START_Z - i * JOURNEY_SPACING * (brands.length / list.length),
-        ] as [number, number, number],
-        size: (0.36 + rand(i + 23) * 0.3) * (aspect >= 1 ? 1 : 0.62),
-        color: COLORS[i % COLORS.length],
-      };
-    });
-  }, [tier, aspect]);
+  const items = useMemo(
+    () =>
+      layoutConstellation({
+        names: tier === "high" ? names : names.slice(0, LOW_TIER_COUNT),
+        aspect: size.width / size.height,
+        viewportHeightPx: size.height,
+        fovDeg: HERO_FOV,
+        focus: CONSTELLATION_FOCUS,
+        startZ: JOURNEY_START_Z,
+        travel: JOURNEY_LENGTH,
+        sway: journeySway,
+      }),
+    [names, tier, size.width, size.height],
+  );
 
   useFrame((state) => {
     const { hero, journey } = useLandingStore.getState();
@@ -60,12 +47,11 @@ export function BrandConstellation() {
     items.forEach((item, i) => {
       const text = refs.current[i];
       if (!text) return;
-      const ahead = camZ - item.position[2];
-      // Fade in from the fog, and out just before the name passes the lens.
-      const near = MathUtils.smoothstep(ahead, 0.4, 2.4);
-      const far = 1 - MathUtils.smoothstep(ahead, 16, 26);
-      text.fillOpacity = presence * near * far;
-      text.visible = text.fillOpacity > 0.01;
+      const d = camZ - item.position[2];
+      const fadeIn = 1 - MathUtils.smoothstep(d, 15, 24);
+      const fadeOut = MathUtils.smoothstep(d, item.fadeOut, item.fadeOutStart);
+      text.fillOpacity = presence * fadeIn * fadeOut;
+      text.visible = d > 0 && text.fillOpacity > 0.01;
     });
   });
 
@@ -73,20 +59,28 @@ export function BrandConstellation() {
     <group>
       {items.map((item, i) => (
         <Text
-          key={item.brand.slug}
+          key={item.name}
           ref={(node: TroikaText | null) => {
             refs.current[i] = node;
           }}
           font={FONT_URL}
           position={item.position}
-          fontSize={item.size}
+          fontSize={item.fontSize}
           letterSpacing={0.16}
-          color={item.color}
+          color={COLORS[i % COLORS.length]}
           anchorX="center"
           anchorY="middle"
           sdfGlyphSize={tier === "high" ? 64 : 32}
+          // The layout plans each name's width from font metrics; if real glyphs run wider,
+          // scale the name down so it can never leave its safe frame.
+          onSync={(mesh: TroikaText) => {
+            const bounds = mesh.textRenderInfo?.blockBounds;
+            if (!bounds) return;
+            const actual = bounds[2] - bounds[0];
+            mesh.scale.setScalar(actual > item.plannedWidth ? item.plannedWidth / actual : 1);
+          }}
         >
-          {item.brand.name.toUpperCase()}
+          {item.name}
           <meshBasicMaterial transparent depthWrite={false} toneMapped={false} fog />
         </Text>
       ))}

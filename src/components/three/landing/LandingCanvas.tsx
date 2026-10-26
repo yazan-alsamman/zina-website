@@ -16,7 +16,7 @@ import { FrameloopController, ProgressBridge, ReadySignal } from "./SceneSignals
 import { StudioLights } from "./StudioLights";
 
 /** The single persistent WebGL canvas behind the landing page. Loaded lazily after first paint. */
-export default function LandingCanvas() {
+export default function LandingCanvas({ houseNames }: { houseNames: readonly string[] }) {
   const tier = useLandingStore((s) => s.tier);
   const still = usePrefersReducedMotion();
   const [webgl] = useState(isWebGLAvailable);
@@ -53,7 +53,7 @@ export default function LandingCanvas() {
         <Backdrop />
         <StudioLights />
         <HeroObjects />
-        <BrandConstellation />
+        <BrandConstellation names={houseNames} />
         <Preload all />
         <ReadySignal />
       </Suspense>

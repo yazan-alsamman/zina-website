@@ -51,7 +51,7 @@ export function HeroMotion({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div ref={ref} className="relative flex flex-col items-center">
+    <div ref={ref} className="relative flex flex-col items-center rtl:items-start">
       {children}
     </div>
   );

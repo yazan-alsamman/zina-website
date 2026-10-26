@@ -3,7 +3,7 @@
 import { Float } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { easing } from "maath";
-import { type ReactNode, useMemo, useRef } from "react";
+import { type ReactNode, useMemo, useRef, useState } from "react";
 import type { Group } from "three";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useLandingStore } from "@/lib/landing-store";
@@ -36,13 +36,19 @@ const PEARLS: Array<[number, number, number, number]> = [
   [-0.33, -0.33, 1.9, 0.04],
 ];
 
-function useLayout(width: number, height: number) {
+/**
+ * Three compositions:
+ *  - wide LTR: centred headline, objects frame it left and right;
+ *  - wide RTL: the Arabic headline is set on the right, so objects gather on the left;
+ *  - narrow: a clear horizontal band for the text, objects in the top and bottom edges.
+ */
+function useLayout(width: number, height: number, rtl: boolean) {
   return useMemo(() => {
     const aspect = width / height;
     const H = HERO_VIEW_HEIGHT;
     const W = H * aspect;
     const wide = aspect >= 1;
-    const k = wide ? Math.min(Math.max(W / 10, 0.8), 1.15) : Math.min(Math.max(W / 4.2, 0.5), 0.75);
+    const k = wide ? Math.min(Math.max(W / 10, 0.8), 1.15) : Math.min(Math.max(W / 4.2, 0.5), 0.72);
 
     const place = (position: Vec3, rotation: Vec3, scale: number, depth: number): Placement => ({
       position,
@@ -51,39 +57,61 @@ function useLayout(width: number, height: number) {
       depth,
     });
 
-    const objects = wide
-      ? {
-          perfume: place([0.4 * W, 0.35, -0.6], [0.12, -0.5, 0.06], 1, 1.2),
-          lipstick: place([-0.37 * W, -0.25, 0.3], [0.15, 0.4, -0.32], 1, 1.6),
-          cap: place([-0.22 * W, 1.6, -1.6], [0.6, 0, 0.9], 0.85, 0.8),
-          compact: place([0.19 * W, -1.8, 0.9], [0.55, -0.35, 0.12], 1, 1.9),
-          droplets: [
-            place([0.26 * W, 1.45, 0.4], [0, 0, 0], 1, 1.4),
-            place([0.44 * W, -1.0, 1.0], [0, 0, 0.3], 0.8, 2),
-            place([-0.43 * W, 1.15, -0.2], [0, 0, -0.2], 1.1, 1),
-          ],
-        }
-      : {
-          perfume: place([0.2 * W, 1.85, -0.6], [0.12, -0.5, 0.06], 1, 1.2),
-          lipstick: place([-0.22 * W, -1.75, 0.3], [0.15, 0.4, -0.32], 1, 1.6),
-          cap: place([-0.3 * W, 2.25, -1.4], [0.6, 0, 0.9], 0.85, 0.8),
-          compact: place([0.24 * W, -2.15, 0.6], [0.55, -0.35, 0.12], 1, 1.9),
-          droplets: [
-            place([0.36 * W, 0.95, 0.4], [0, 0, 0], 1, 1.4),
-            place([-0.4 * W, 1.0, -0.2], [0, 0, 0], 1, 1),
-          ],
-        };
+    let objects;
+    if (!wide) {
+      // Text owns roughly y ∈ [-1.35, 1.45]; every object stays above or below that band.
+      objects = {
+        perfume: place([0.3 * W, 2.05, -0.6], [0.12, -0.5, 0.06], 0.95, 1.2),
+        lipstick: place([-0.28 * W, -2.1, 0.3], [0.15, 0.4, -0.5], 1, 1.6),
+        cap: place([-0.33 * W, 2.3, -1.4], [0.6, 0, 0.9], 0.75, 0.8),
+        compact: place([0.27 * W, -2.25, 0.6], [0.6, -0.35, 0.12], 0.95, 1.9),
+        droplets: [
+          place([-0.4 * W, 1.75, -0.2], [0, 0, 0], 1, 1),
+          place([0.42 * W, -1.6, 0.4], [0, 0, 0.3], 0.9, 1.4),
+        ],
+      };
+    } else if (rtl) {
+      objects = {
+        perfume: place([-0.37 * W, 0.4, -0.6], [0.12, 0.5, -0.06], 1, 1.2),
+        compact: place([-0.15 * W, -1.75, 0.9], [0.55, 0.35, -0.12], 1, 1.9),
+        cap: place([-0.08 * W, 1.95, -1.6], [0.6, 0, -0.9], 0.8, 0.8),
+        // Laid low in the bottom-right corner, beneath the right-aligned Arabic copy.
+        lipstick: place([0.36 * W, -2.05, 0.3], [0.2, -0.4, 1.15], 0.85, 1.6),
+        droplets: [
+          place([-0.26 * W, 1.5, 0.4], [0, 0, 0], 1, 1.4),
+          place([-0.45 * W, -1.05, 1.0], [0, 0, -0.3], 0.8, 2),
+          place([0.05 * W, -2.2, -0.2], [0, 0, 0.2], 1, 1),
+        ],
+      };
+    } else {
+      objects = {
+        perfume: place([0.4 * W, 0.35, -0.6], [0.12, -0.5, 0.06], 1, 1.2),
+        lipstick: place([-0.37 * W, -0.25, 0.3], [0.15, 0.4, -0.32], 1, 1.6),
+        cap: place([-0.22 * W, 1.6, -1.6], [0.6, 0, 0.9], 0.85, 0.8),
+        compact: place([0.19 * W, -1.8, 0.9], [0.55, -0.35, 0.12], 1, 1.9),
+        droplets: [
+          place([0.26 * W, 1.45, 0.4], [0, 0, 0], 1, 1.4),
+          place([0.44 * W, -1.0, 1.0], [0, 0, 0.3], 0.8, 2),
+          place([-0.43 * W, 1.15, -0.2], [0, 0, -0.2], 1.1, 1),
+        ],
+      };
+    }
 
-    const pearls: PearlSpec[] = PEARLS.slice(0, wide ? PEARLS.length : 6).map(
-      ([fx, fy, z, r], i) => ({
+    // Keep pearls out of the text zone for each composition.
+    const inTextZone = ([fx, fy]: [number, number, number, number]) =>
+      !wide ? Math.abs(fy) < 0.3 : rtl ? fx > -0.02 && Math.abs(fy) < 0.4 : false;
+    const pearls: PearlSpec[] = PEARLS.map(
+      ([fx, fy, z, r]) => [rtl && wide ? -fx : fx, fy, z, r] as [number, number, number, number],
+    )
+      .filter((p) => !inTextZone(p))
+      .map(([fx, fy, z, r], i) => ({
         position: [fx * W, fy * H, z],
         radius: r * (wide ? 1 : 0.8),
         phase: i * 1.7,
-      }),
-    );
+      }));
 
     return { objects, pearls };
-  }, [width, height]);
+  }, [width, height, rtl]);
 }
 
 /** Wraps one object: drei Float for idle motion, damped pointer parallax, spread on scroll. */
@@ -144,7 +172,9 @@ export function HeroObjects() {
   const tier = useLandingStore((s) => s.tier);
   const still = usePrefersReducedMotion();
   const size = useThree((s) => s.size);
-  const { objects, pearls } = useLayout(size.width, size.height);
+  // The canvas is client-only, so the document direction is known at mount.
+  const [rtl] = useState(() => document.documentElement.dir === "rtl");
+  const { objects, pearls } = useLayout(size.width, size.height, rtl);
   const materials = useHeroMaterials(tier);
   const segments = tier === "high" ? 96 : 40;
 

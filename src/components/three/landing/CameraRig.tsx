@@ -6,10 +6,8 @@ import { useMemo } from "react";
 import { Vector3 } from "three";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useLandingStore } from "@/lib/landing-store";
+import { HERO_DOLLY, JOURNEY_LENGTH, journeySway } from "./journey";
 import { HERO_CAMERA_Z } from "./palette";
-
-const HERO_DOLLY = 3; // camera eases forward as the hero leaves
-const JOURNEY_LENGTH = 52; // world units travelled through the constellation
 
 /** Scroll-driven camera: a slow dolly out of the hero, then a gliding flight through the houses. */
 export function CameraRig() {
@@ -21,15 +19,15 @@ export function CameraRig() {
     const { hero, journey, pointer } = useLandingStore.getState();
     const camera = state.camera;
 
-    // A gentle S-curve so the flight never feels like a straight rail.
-    const swayX = Math.sin(journey * Math.PI * 2) * 0.7;
-    const swayY = Math.sin(journey * Math.PI) * 0.35;
-    const px = still ? 0 : pointer.x * 0.28;
-    const py = still ? 0 : pointer.y * 0.16;
+    // Pointer parallax is lively in the hero and calms down during the journey, so the
+    // constellation's framing (computed for the camera path) stays exact.
+    const calm = 1 - Math.min(journey * 12, 1) * 0.75;
+    const px = still ? 0 : pointer.x * 0.28 * calm;
+    const py = still ? 0 : pointer.y * 0.16 * calm;
 
     target.set(
-      swayX + px,
-      swayY + py,
+      journeySway(journey) + px,
+      py,
       HERO_CAMERA_Z - hero * HERO_DOLLY - journey * JOURNEY_LENGTH,
     );
 

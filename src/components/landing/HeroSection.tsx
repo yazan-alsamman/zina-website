@@ -10,7 +10,7 @@ export function HeroSection() {
     <section
       id="hero"
       aria-labelledby="hero-title"
-      className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden px-gutter pt-24 pb-16 text-white"
+      className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden px-gutter pt-24 pb-16 text-white rtl:items-start md:rtl:ps-[9vw]"
     >
       <HeroMotion>
         <h1
@@ -20,7 +20,14 @@ export function HeroSection() {
           <SplitReveal as="span" mode="intro" className="block self-start">
             {t("titleFirst")}
           </SplitReveal>
-          <SplitReveal as="span" mode="intro" delay={0.14} className="block self-end ps-[0.9em]">
+          {/* LTR: the second line steps to the right. RTL: both lines hang from the right edge
+              and the second steps inward, the Arabic counterpart of the English stagger. */}
+          <SplitReveal
+            as="span"
+            mode="intro"
+            delay={0.14}
+            className="block self-end ps-[0.9em] rtl:self-start rtl:ps-[1.15em]"
+          >
             {t("titleSecond")}
           </SplitReveal>
         </h1>
@@ -29,7 +36,7 @@ export function HeroSection() {
           as="p"
           mode="intro"
           delay={0.4}
-          className="mt-8 max-w-[30ch] text-center text-lead text-balance text-sand-100 md:mt-10"
+          className="mt-8 max-w-[30ch] text-center text-lead text-balance text-sand-100 md:mt-10 rtl:text-start"
         >
           {t("tagline")}
         </SplitReveal>

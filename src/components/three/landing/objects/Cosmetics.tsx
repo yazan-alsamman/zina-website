@@ -67,21 +67,17 @@ export function Perfume({ materials, segments }: ObjectProps) {
 
 export function Compact({ materials, segments }: ObjectProps) {
   const shell = useDisposable(() => compactShell(segments), [segments]);
-  const pan = useDisposable(
-    () => new SphereGeometry(1, segments, 2, 0, Math.PI * 2, 0, 0.12),
-    [segments],
-  );
 
   return (
     <group>
       <mesh geometry={shell} material={materials.champagne} />
-      {/* Pressed powder: a shallow dome inset into the base */}
-      <mesh
-        geometry={pan}
-        material={materials.powder}
-        position-y={0.108}
-        scale={[0.5, 0.05, 0.5]}
-      />
+      {/* Pressed powder sitting in a thin metal pan on top of the base */}
+      <mesh material={materials.powder} position-y={0.142} rotation-x={-Math.PI / 2}>
+        <circleGeometry args={[0.5, segments]} />
+      </mesh>
+      <mesh material={materials.champagne} position-y={0.142} rotation-x={-Math.PI / 2}>
+        <torusGeometry args={[0.51, 0.012, 8, segments]} />
+      </mesh>
       {/* Lid hinged at the back edge, opened to show its mirror */}
       <group position={[0, 0.14, -0.6]} rotation-x={-1.92}>
         <group position-z={0.6}>

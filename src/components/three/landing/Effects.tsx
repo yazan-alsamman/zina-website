@@ -21,6 +21,7 @@ import { useMemo, useRef } from "react";
 import { Vector2 } from "three";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useLandingStore } from "@/lib/landing-store";
+import { CONSTELLATION_FOCUS, CONSTELLATION_FOCUS_RANGE, HERO_DOLLY } from "./journey";
 import { HERO_CAMERA_Z } from "./palette";
 
 /**
@@ -43,17 +44,17 @@ export function Effects() {
     if (store.velocity > 0.001) store.set({ velocity: store.velocity * 0.9 });
 
     if (dof.current) {
-      // Hero: objects sharp at z = 0. Journey: focus a few metres ahead, far names melt away.
+      // Hero: objects sharp at z = 0. Journey: a narrow band where exactly one house name is sharp.
       const inJourney = store.journey > 0.01;
       easing.damp(
         focus.current,
         "distance",
-        inJourney ? 5.5 : HERO_CAMERA_Z - store.hero * 3,
+        inJourney ? CONSTELLATION_FOCUS : HERO_CAMERA_Z - store.hero * HERO_DOLLY,
         0.4,
         delta,
       );
       dof.current.cocMaterial.focusDistance = focus.current.distance;
-      dof.current.cocMaterial.focusRange = inJourney ? 3.5 : 5;
+      dof.current.cocMaterial.focusRange = inJourney ? CONSTELLATION_FOCUS_RANGE : 5;
     }
 
     if (aberration.current) {

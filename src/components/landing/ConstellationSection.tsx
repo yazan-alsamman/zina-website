@@ -1,9 +1,8 @@
 import { useTranslations } from "next-intl";
 import { SplitReveal } from "@/components/motion/SplitReveal";
-import { brands } from "@/config/brands";
 import { ConstellationMotion } from "./ConstellationMotion";
 
-export function ConstellationSection() {
+export function ConstellationSection({ houseNames }: { houseNames: readonly string[] }) {
   const t = useTranslations("Houses");
 
   return (
@@ -26,8 +25,8 @@ export function ConstellationSection() {
 
         {/* The constellation lives in WebGL; this is the same list for assistive technology. */}
         <ul className="sr-only" aria-label={t("listLabel")}>
-          {brands.map((brand) => (
-            <li key={brand.slug}>{brand.name}</li>
+          {houseNames.map((name) => (
+            <li key={name}>{name}</li>
           ))}
         </ul>
       </ConstellationMotion>

@@ -216,10 +216,12 @@
   }
 }
 
-/* Arabic display type needs taller lines than Cormorant's tight Latin setting. */
+/* Arabic display: Noto Naskh at a heavier optical weight (its range is 400–700), sized and
+   leaded for the script's tall ascenders and deep descenders rather than Cormorant's metrics. */
 :lang(ar) .hero-title {
-  font-size: clamp(4rem, 1.4rem + 10vw, 11rem);
-  line-height: 1.12;
+  font-size: clamp(4.25rem, 1.4rem + 9.2vw, 11.5rem);
+  font-weight: 500;
+  line-height: 1.16;
   letter-spacing: 0;
 }
 

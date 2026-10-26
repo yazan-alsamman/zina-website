@@ -7,16 +7,19 @@ import { LandingStage } from "@/components/landing/LandingStage";
 import { OrderingSection } from "@/components/landing/OrderingSection";
 import { Preloader } from "@/components/landing/Preloader";
 import { ScrollRefresh } from "@/components/motion/ScrollRefresh";
+import { getConstellationBrandNames } from "@/lib/brand-names";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const houseNames = await getConstellationBrandNames();
+
   return (
     <>
       <Preloader />
-      <LandingStage />
+      <LandingStage houseNames={houseNames} />
       {/* Header switches to its light tone over the night hero via :has(). */}
       <main id="main" data-header-tone="light" className="relative z-10 flex-1">
         <HeroSection />
-        <ConstellationSection />
+        <ConstellationSection houseNames={houseNames} />
         <AboutSection />
         <EditSection />
         <OrderingSection />

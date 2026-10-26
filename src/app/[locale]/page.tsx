@@ -1,23 +1,28 @@
-import { useTranslations } from "next-intl";
-import { HeroSphereStage } from "@/components/home/HeroSphereStage";
+import { AboutSection } from "@/components/landing/AboutSection";
+import { ConstellationSection } from "@/components/landing/ConstellationSection";
+import { EditSection } from "@/components/landing/EditSection";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { InstagramSection } from "@/components/landing/InstagramSection";
+import { LandingStage } from "@/components/landing/LandingStage";
+import { OrderingSection } from "@/components/landing/OrderingSection";
+import { Preloader } from "@/components/landing/Preloader";
+import { ScrollRefresh } from "@/components/motion/ScrollRefresh";
 
 export default function HomePage() {
-  const t = useTranslations("HomePage");
-
   return (
-    <main id="main" className="relative isolate flex flex-1 flex-col">
-      {/* Temporary R3F pipeline check; replaced by the real landing in step 03. */}
-      <section className="relative grid min-h-[calc(100dvh-6rem)] place-items-center overflow-hidden px-gutter">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,var(--color-sand-100),var(--color-white)_70%)]" />
-        <div className="absolute inset-0 -z-10">
-          <HeroSphereStage />
-        </div>
-        <div className="pointer-events-none text-center">
-          <p className="text-caption tracking-[0.24em] text-sand-700 uppercase">{t("eyebrow")}</p>
-          <h1 className="mt-4 font-latin-display text-display text-mocha">{t("title")}</h1>
-          <p className="mt-6 text-lead text-mocha">{t("subtitle")}</p>
-        </div>
-      </section>
-    </main>
+    <>
+      <Preloader />
+      <LandingStage />
+      {/* Header switches to its light tone over the night hero via :has(). */}
+      <main id="main" data-header-tone="light" className="relative z-10 flex-1">
+        <HeroSection />
+        <ConstellationSection />
+        <AboutSection />
+        <EditSection />
+        <OrderingSection />
+        <InstagramSection />
+      </main>
+      <ScrollRefresh />
+    </>
   );
 }

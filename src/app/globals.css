@@ -41,6 +41,9 @@
   --text-display: clamp(3.5rem, 2.5rem + 4.19vw, 7.5rem);
   --text-display--line-height: 0.95;
   --text-display--letter-spacing: -0.01em;
+  --text-hero: clamp(4.75rem, 1.6rem + 10.6vw, 12rem);
+  --text-hero--line-height: 0.84;
+  --text-hero--letter-spacing: -0.02em;
 
   /* Spacing: Tailwind's 4px base plus semantic layout steps */
   --spacing: 0.25rem;
@@ -84,6 +87,8 @@
   html {
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    /* The preloader locks scrolling; reserving the gutter keeps the layout width constant. */
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -105,9 +110,157 @@
     @apply bg-sand-200 text-mocha-900;
   }
 
+  /* currentColor keeps the ring visible on both day (white) and night (mocha) sections. */
   :focus-visible {
-    outline: 1px solid var(--color-mocha);
-    outline-offset: 3px;
+    outline: 1px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  body {
+    /* Pinned horizontal sections must never create page-level horizontal scroll. */
+    overflow-x: clip;
+  }
+}
+
+@layer components {
+  /* Small tracked label (Jost). Arabic is a joined script: never letter-space or uppercase it. */
+  .label {
+    font-family: var(--ff-body);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  .label:lang(ar) {
+    font-size: 0.875rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* SplitText line masks: extra block padding so ascenders/diacritics are never clipped. */
+  .split-line {
+    padding-block: 0.14em;
+    margin-block: -0.14em;
+  }
+
+  /* Film grain for placeholder frames and night surfaces. */
+  .grain {
+    isolation: isolate;
+  }
+
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.22;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.45 0 0 0 0 0.4 0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  /* Placeholder photo tones (replaced by real photography via src/config/media.ts). */
+  .media-sand {
+    background:
+      radial-gradient(120% 80% at 28% 18%, var(--color-sand-100), transparent 60%),
+      linear-gradient(
+        160deg,
+        var(--color-sand-200) 0%,
+        var(--color-sand) 55%,
+        var(--color-sand-700) 100%
+      );
+  }
+
+  .media-mocha {
+    background:
+      radial-gradient(90% 70% at 70% 25%, rgb(184 164 143 / 0.45), transparent 65%),
+      linear-gradient(
+        170deg,
+        var(--color-mocha) 0%,
+        var(--color-mocha-800) 60%,
+        var(--color-mocha-900) 100%
+      );
+  }
+
+  .media-mist {
+    background:
+      radial-gradient(110% 80% at 65% 20%, var(--color-white), transparent 60%),
+      linear-gradient(
+        165deg,
+        var(--color-mist) 0%,
+        var(--color-sand-200) 70%,
+        var(--color-sand) 100%
+      );
+  }
+
+  /* Same atmosphere as the WebGL backdrop, shown before (or instead of) the canvas. */
+  .stage-backdrop {
+    background:
+      radial-gradient(60% 48% at 50% 36%, rgb(184 164 143 / 0.42), transparent 70%),
+      linear-gradient(
+        180deg,
+        var(--color-mocha) 0%,
+        var(--color-mocha-800) 70%,
+        var(--color-mocha-900) 100%
+      );
+  }
+}
+
+@keyframes cue {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(200%);
+  }
+}
+
+/* Arabic display type needs taller lines than Cormorant's tight Latin setting. */
+:lang(ar) .hero-title {
+  font-size: clamp(4rem, 1.4rem + 10vw, 11rem);
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+/* Preloader shows once per session, never with reduced motion or without JavaScript. */
+html[data-intro="seen"] .preloader {
+  display: none;
+}
+
+/* Header sits over the night hero on the landing page. */
+.site-header {
+  --header-fg: var(--color-mocha);
+  --header-muted: var(--color-sand-700);
+  color: var(--header-fg);
+}
+
+.site-footer {
+  --header-fg: var(--color-white);
+  --header-muted: var(--color-sand-200);
+}
+
+body:has([data-header-tone="light"]) .site-header {
+  --header-fg: var(--color-white);
+  --header-muted: var(--color-sand-200);
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+}
+
+/* Custom cursor replaces the system pointer only where it is active (fine pointers). */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
+html.has-custom-cursor :is(input, textarea, select, [contenteditable]) {
+  cursor: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preloader {
+    display: none;
   }
 }
 

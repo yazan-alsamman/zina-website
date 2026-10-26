@@ -10,14 +10,17 @@ const nativeNames: Record<Locale, string> = {
   ar: "العربية",
 };
 
-/** Links to the same path in every other locale (real anchors, so it works without JS). */
+/**
+ * Links to the same path in every other locale (real anchors, so it works without JS).
+ * Colours come from `--header-fg` / `--header-muted`, set by the header or footer it sits in.
+ */
 export function LanguageSwitcher({ className }: { className?: string }) {
   const t = useTranslations("LanguageSwitcher");
   const pathname = usePathname();
   const current = useLocale();
 
   return (
-    <nav aria-label={t("label")} className={cn("flex items-center gap-3", className)}>
+    <nav aria-label={t("label")} className={cn("flex items-center gap-5", className)}>
       {routing.locales.map((locale) => (
         <Link
           key={locale}
@@ -27,10 +30,10 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           hrefLang={locale}
           aria-current={locale === current ? "true" : undefined}
           className={cn(
-            "text-caption tracking-[0.08em] uppercase transition-colors duration-300 ease-luxe",
+            "label border-b pb-1 transition-colors duration-500 ease-luxe",
             locale === current
-              ? "text-mocha underline decoration-sand underline-offset-4"
-              : "text-sand-700 hover:text-mocha",
+              ? "border-current text-(--header-fg)"
+              : "border-transparent text-(--header-muted) hover:text-(--header-fg)",
           )}
         >
           {nativeNames[locale]}

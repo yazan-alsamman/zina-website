@@ -34,6 +34,8 @@ npm run dev                 # http://localhost:3000 → redirects to /en
 - `src/lib/gsap.ts`: GSAP plugins registered once, client-side. `src/components/motion/SmoothScroll.tsx`: Lenis on GSAP's ticker.
 - `src/components/three/Scene.tsx`: client-only R3F canvas (`next/dynamic`, `ssr: false`).
 - `prisma/schema.prisma`: data model. `prisma.config.ts` holds the connection URL.
+- `src/components/landing/`: landing sections. `src/components/three/landing/`: the single persistent WebGL scene (procedural cosmetics, brand constellation, post-processing), loaded after first paint.
+- `src/config/`: brands, featured reviews, media slots (placeholder frames until photos exist) and site stats. Placeholder values are marked in each file.
 - `docs/design-tokens.md`: colours, contrast ratios, type, spacing, motion.
 
 Original photos go in `assets/raw-photos/` (git-ignored, never committed).

@@ -1,22 +1,96 @@
 {
   "Metadata": {
     "title": "Zina Al Mokri",
-    "description": "Curated beauty and lifestyle selections by Zina Al Mokri."
+    "description": "Honest reviews of the world's finest beauty by Zina Al Mokri, and the products she recommends, delivered worldwide."
   },
   "Navigation": {
     "label": "Main",
     "home": "Home",
     "products": "Products",
     "about": "About",
-    "cart": "Cart"
+    "cart": "Cart",
+    "skip": "Skip to content"
   },
   "LanguageSwitcher": {
     "label": "Language"
   },
-  "HomePage": {
-    "eyebrow": "Foundation preview",
-    "title": "Zina Al Mokri",
-    "subtitle": "Quiet luxury, carefully chosen."
+  "Preloader": {
+    "loading": "Loading"
+  },
+  "Hero": {
+    "titleFirst": "Zina",
+    "titleSecond": "Al Mokri",
+    "tagline": "Honest reviews of the world's finest beauty.",
+    "cta": "See the edit",
+    "scroll": "Scroll"
+  },
+  "Houses": {
+    "overline": "The houses",
+    "title": "Sent by the houses that shape beauty.",
+    "body": "The world's great beauty houses send their newest work to Zina's table. Only what earns its place is reviewed for you.",
+    "listLabel": "Beauty houses Zina has reviewed"
+  },
+  "About": {
+    "overline": "About Zina",
+    "title": "A trusted eye, not a sales pitch.",
+    "body": "Zina Al Mokri tests every product on her own skin before she says a word about it. No paid verdicts, no borrowed opinions. Just what works, what doesn't, and why.",
+    "statsLabel": "Zina in numbers",
+    "stats": {
+      "reviews": "Reviews published",
+      "brands": "Houses reviewed",
+      "followers": "Followers on Instagram"
+    }
+  },
+  "Edit": {
+    "overline": "The edit",
+    "title": "Reviewed by Zina. Ready to order.",
+    "body": "A short list of what she would buy again.",
+    "rating": "Zina's rating: {rating} out of 5",
+    "order": "Order",
+    "view": "View"
+  },
+  "Ordering": {
+    "title": "Ordering, simply.",
+    "steps": {
+      "choose": {
+        "title": "Choose",
+        "body": "Pick any product Zina has reviewed and send your order in a minute."
+      },
+      "confirm": {
+        "title": "We confirm",
+        "body": "Zina's team confirms shipping to your country and sends you the final total."
+      },
+      "deliver": {
+        "title": "Delivered",
+        "body": "Your order is packed with care and delivered worldwide."
+      }
+    },
+    "paymentTitle": "Pay the way you prefer",
+    "payment": {
+      "cod": "Cash on delivery",
+      "card": "Card",
+      "whatsapp": "WhatsApp"
+    }
+  },
+  "Instagram": {
+    "title": "Every day, on Instagram.",
+    "body": "First impressions, honest follow-ups and what is on Zina's vanity this week.",
+    "cta": "Follow @{handle}",
+    "tiles": {
+      "t1": "First impressions",
+      "t2": "On the vanity",
+      "t3": "Swatch day",
+      "t4": "Week two, honestly",
+      "t5": "Worth the hype?",
+      "t6": "The shelf edit"
+    },
+    "open": "Open on Instagram: {caption}",
+    "view": "View"
+  },
+  "Footer": {
+    "navLabel": "Footer",
+    "instagram": "Instagram",
+    "rights": "© {year} Zina Al Mokri. All rights reserved."
   },
   "ProductsPage": {
     "title": "Products",

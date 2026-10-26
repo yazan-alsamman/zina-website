@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { CustomEase } from "gsap/CustomEase";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
 
 let registered = false;
 
@@ -11,7 +12,7 @@ function registerGsap() {
   if (registered || typeof window === "undefined") return;
   registered = true;
 
-  gsap.registerPlugin(useGSAP, ScrollTrigger, CustomEase);
+  gsap.registerPlugin(useGSAP, ScrollTrigger, CustomEase, SplitText);
 
   // Mirror the CSS easing tokens (globals.css) so CSS and GSAP motion feel identical.
   CustomEase.create("luxe", "M0,0 C0.22,1 0.36,1 1,1");
@@ -29,4 +30,4 @@ export const motionQueries = {
   reduceMotion: "(prefers-reduced-motion: reduce)",
 } as const;
 
-export { CustomEase, gsap, ScrollTrigger, useGSAP };
+export { CustomEase, gsap, ScrollTrigger, SplitText, useGSAP };

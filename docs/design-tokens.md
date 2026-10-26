@@ -72,15 +72,16 @@ so English pages don't download them. Arabic body line-height is raised to 1.85.
 
 Fluid scale (390px → 1440px viewport):
 
-| Token          | Size                               | Line height |
-| -------------- | ---------------------------------- | ----------- |
-| `text-caption` | 0.75rem (letter-spacing 0.08em)    | 1.5         |
-| `text-body`    | 1rem → 1.125rem                    | 1.7         |
-| `text-lead`    | 1.125rem → 1.375rem                | 1.6         |
-| `text-h3`      | 1.5rem → 2rem                      | 1.25        |
-| `text-h2`      | 2rem → 3rem                        | 1.15        |
-| `text-h1`      | 2.75rem → 4.75rem                  | 1.05        |
-| `text-display` | 3.5rem → 7.5rem (tracking -0.01em) | 0.95        |
+| Token          | Size                                                                  | Line height        |
+| -------------- | --------------------------------------------------------------------- | ------------------ |
+| `text-caption` | 0.75rem (letter-spacing 0.08em)                                       | 1.5                |
+| `text-body`    | 1rem → 1.125rem                                                       | 1.7                |
+| `text-lead`    | 1.125rem → 1.375rem                                                   | 1.6                |
+| `text-h3`      | 1.5rem → 2rem                                                         | 1.25               |
+| `text-h2`      | 2rem → 3rem                                                           | 1.15               |
+| `text-h1`      | 2.75rem → 4.75rem                                                     | 1.05               |
+| `text-display` | 3.5rem → 7.5rem (tracking -0.01em)                                    | 0.95               |
+| `text-hero`    | 4.75rem → 12rem (tracking -0.02em; Arabic: 4rem → 11rem, no tracking) | 0.84 (Arabic 1.12) |
 
 ## Spacing and layout
 

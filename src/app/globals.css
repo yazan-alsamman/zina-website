@@ -144,6 +144,25 @@
     margin-block: -0.14em;
   }
 
+  /* Rendered review Markdown (admin preview, product pages). */
+  .prose-review > * + * {
+    margin-top: 0.8em;
+  }
+
+  .prose-review ul {
+    list-style: disc;
+    padding-inline-start: 1.25em;
+  }
+
+  .prose-review ol {
+    list-style: decimal;
+    padding-inline-start: 1.25em;
+  }
+
+  .prose-review strong {
+    font-weight: 600;
+  }
+
   /* Film grain for placeholder frames and night surfaces. */
   .grain {
     isolation: isolate;

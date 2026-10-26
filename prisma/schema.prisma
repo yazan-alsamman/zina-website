@@ -63,47 +63,76 @@ model Product {
 }
 
 model ProductImage {
-  id        String  @id @default(cuid())
+  id        String      @id @default(cuid())
   productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  /// Media path of the default (largest WebP) rendition, relative to PUBLIC_MEDIA_URL
   url       String
   altEn     String
   altAr     String
-  sortOrder Int     @default(0)
+  /// 0 = cover image
+  sortOrder Int         @default(0)
+  assetId   String?
+  asset     MediaAsset? @relation(fields: [assetId], references: [id], onDelete: SetNull)
 
   @@index([productId, sortOrder])
+  @@index([assetId])
+}
+
+/// An uploaded image, stored on our own server under UPLOAD_DIR and processed into responsive
+/// AVIF + WebP renditions. Files live in `dir`: the metadata-stripped original plus
+/// w{width}.avif / w{width}.webp for every width in `widths`.
+model MediaAsset {
+  id            String         @id @default(cuid())
+  /// Directory relative to UPLOAD_DIR, e.g. "2026/10/clx123abc"
+  dir           String
+  /// File name of the stripped original inside `dir`, e.g. "original.jpg"
+  original      String
+  mime          String
+  width         Int
+  height        Int
+  bytes         Int
+  /// Tiny base64 WebP data URI, used as the blur placeholder
+  lqip          String         @db.Text
+  widths        Int[]
+  productImages ProductImage[]
+  createdAt     DateTime       @default(now())
 }
 
 model Order {
-  id            String        @id @default(cuid())
+  id             String        @id @default(cuid())
   /// Human-readable reference shown to customers, e.g. "ZM-2026-00042"
-  orderNumber   String        @unique
-  status        OrderStatus   @default(PENDING_REVIEW)
-  customerName  String
-  email         String
-  phone         String
-  whatsapp      String?
+  orderNumber    String        @unique
+  status         OrderStatus   @default(PENDING_REVIEW)
+  customerName   String
+  email          String
+  phone          String
+  whatsapp       String?
   /// ISO 3166-1 alpha-2
-  country       String        @db.Char(2)
-  city          String
-  addressLine1  String
-  addressLine2  String?
-  postalCode    String?
-  notes         String?       @db.Text
-  paymentMethod PaymentMethod
-  subtotal      Decimal       @db.Decimal(10, 2)
+  country        String        @db.Char(2)
+  city           String
+  addressLine1   String
+  addressLine2   String?
+  postalCode     String?
+  notes          String?       @db.Text
+  paymentMethod  PaymentMethod
+  subtotal       Decimal       @db.Decimal(10, 2)
   /// null until an admin reviews the order and sets shipping
-  shippingFee   Decimal?      @db.Decimal(10, 2)
+  shippingFee    Decimal?      @db.Decimal(10, 2)
   /// null until shippingFee is known
-  total         Decimal?      @db.Decimal(10, 2)
+  total          Decimal?      @db.Decimal(10, 2)
   /// ISO 4217 code
-  currency      String        @db.Char(3)
+  currency       String        @db.Char(3)
   /// UI locale the order was placed in ("en" | "ar")
-  locale        String
-  items         OrderItem[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  approvedAt    DateTime?
+  locale         String
+  items          OrderItem[]
+  events         OrderEvent[]
+  trackingNumber String?
+  carrier        String?
+  cancelReason   String?       @db.Text
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  approvedAt     DateTime?
 
   @@index([status])
   @@index([createdAt])
@@ -124,10 +153,29 @@ model OrderItem {
   @@index([productId])
 }
 
+/// Audit trail of every status change (and notable admin edits) on an order.
+model OrderEvent {
+  id         String       @id @default(cuid())
+  orderId    String
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// null for the event that records the order being placed
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  note       String?      @db.Text
+  adminId    String?
+  admin      AdminUser?   @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  createdAt  DateTime     @default(now())
+
+  @@index([orderId, createdAt])
+}
+
 model AdminUser {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  createdAt    DateTime @default(now())
+  id             String       @id @default(cuid())
+  email          String       @unique
+  passwordHash   String
+  name           String
+  /// Bumped on password change; sessions carrying an older version are rejected
+  sessionVersion Int          @default(0)
+  orderEvents    OrderEvent[]
+  createdAt      DateTime     @default(now())
 }

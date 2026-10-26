@@ -24,6 +24,9 @@ test-results/
 .env*
 !.env.example
 
+# uploaded media (stays on the server)
+/storage/
+
 # database
 /prisma/*.db
 /prisma/*.db-journal

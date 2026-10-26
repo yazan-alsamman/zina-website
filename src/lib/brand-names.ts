@@ -1,9 +1,8 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { brands as configBrands } from "@/config/brands";
+import { BRANDS_TAG } from "./cache-tags";
 import { prisma } from "./prisma";
-
-export const BRANDS_TAG = "brands";
 
 /**
  * Names for the landing constellation: brands that have at least one published product,

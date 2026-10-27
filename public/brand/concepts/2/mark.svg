@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 99" role="img" aria-labelledby="t">
+<title id="t">Zina Al Mokri</title>
+<path d="M30 4V30" style="fill:none;stroke:var(--logo-accent,#b8a48f);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/>
+<path d="M30 30C33.6 41 50 54 50 75A20 20 0 0 1 10 75C10 54 26.4 41 30 30" style="fill:none;stroke:var(--logo-ink,#4a3f35);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/>
+
+</svg>

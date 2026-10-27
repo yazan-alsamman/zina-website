@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/admin/products", label: "Products" },
   { href: "/admin/brands", label: "Brands" },
   { href: "/admin/instagram", label: "Instagram" },
+  { href: "/admin/brand", label: "Brand" },
 ] as const;
 
 export function AdminNav() {

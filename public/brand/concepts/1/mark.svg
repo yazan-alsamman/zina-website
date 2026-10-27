@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 168" role="img" aria-labelledby="t">
+<title id="t">Zina Al Mokri</title>
+<path d="M14 160V58A46 46 0 0 1 106 58V160" style="fill:none;stroke:var(--logo-ink,#4a3f35);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"/>
+<path d="M36 52 H84 V54.6 H38.6 V63 C36.39 56.95 35.87 56.16 36 54.6 ZM69 54.6 H84 L49.8 121.4 H36 ZM36 121.4 H81.4 V113 C83.61 119.05 84.13 119.84 84 121.4 V124 H36 Z" style="fill:var(--logo-ink,#4a3f35)"/>
+<path d="M45.6 86.83h28.8v2.34h-28.8Z" style="fill:var(--logo-accent,#b8a48f)"/>
+
+</svg>

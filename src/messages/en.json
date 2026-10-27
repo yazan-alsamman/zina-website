@@ -291,7 +291,7 @@
     "continueWhatsapp": "Continue on WhatsApp",
     "whatsappBody": "Send us your order on WhatsApp so our team can complete it with you.",
     "shipTo": "Shipping to",
-    "placedOn": "Placed {date}",
+    "placedOn": "Placed <date></date>",
     "help": "Questions? Reply to your confirmation email or message us on WhatsApp.",
     "cancelledBody": "This order was cancelled. If this is unexpected, please contact us."
   },

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageHeader, Panel, StatusBadge, tableClass } from "@/components/admin/ui";
+import { LocalTime } from "@/components/LocalTime";
 import { requireAdmin } from "@/lib/auth/session";
 import { formatMoney, fromCents, toCents } from "@/lib/money";
 import {
@@ -18,11 +19,6 @@ import { OrderWorkflow } from "./OrderWorkflow";
 export const metadata: Metadata = { title: "Order" };
 
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
-const when = new Intl.DateTimeFormat("en-GB", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "UTC",
-});
 
 export default async function OrderPage({ params }: PageProps<"/admin/orders/[id]">) {
   await requireAdmin();
@@ -54,7 +50,9 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
         description={
           <span className="flex flex-wrap items-center gap-3">
             <StatusBadge status={order.status} />
-            <span>Placed {when.format(order.createdAt)} UTC</span>
+            <span>
+              Placed <LocalTime value={order.createdAt.toISOString()} />
+            </span>
             <span>· {order.locale === "ar" ? "Arabic" : "English"} site</span>
           </span>
         }
@@ -133,7 +131,7 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
                     </p>
                     {event.note ? <p className="mt-1 text-sm text-sand-700">{event.note}</p> : null}
                     <p className="mt-1 text-xs text-sand-700">
-                      {when.format(event.createdAt)} UTC
+                      <LocalTime value={event.createdAt.toISOString()} />
                       {event.admin ? ` · ${event.admin.name}` : ""}
                     </p>
                   </li>
@@ -184,9 +182,14 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
               <Item
                 label="Payment"
                 value={
-                  order.paidAt
-                    ? `${PAYMENT_LABELS[order.paymentMethod]} · paid ${when.format(order.paidAt)} UTC`
-                    : PAYMENT_LABELS[order.paymentMethod]
+                  order.paidAt ? (
+                    <>
+                      {PAYMENT_LABELS[order.paymentMethod]} · paid{" "}
+                      <LocalTime value={order.paidAt.toISOString()} />
+                    </>
+                  ) : (
+                    PAYMENT_LABELS[order.paymentMethod]
+                  )
                 }
               />
               <Item

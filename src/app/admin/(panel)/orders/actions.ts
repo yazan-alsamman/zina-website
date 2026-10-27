@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { after } from "next/server";
 import type { Prisma } from "@/generated/prisma/client";
 import {
@@ -12,8 +12,17 @@ import {
   shippingFeeSchema,
 } from "@/lib/admin/schemas";
 import { requireAdmin } from "@/lib/auth/session";
+import { PRODUCTS_TAG } from "@/lib/cache-tags";
 import { notifyOrderApproved, notifyOrderShipped, notifyPaymentLink } from "@/lib/email/notify";
 import { computeTotal, formatMoney, fromCents, parseAmount } from "@/lib/money";
+import {
+  planRelease,
+  planReservation,
+  releaseNote,
+  reservationNote,
+  shortageMessage,
+  type StockLine,
+} from "@/lib/orders/stock";
 import {
   assertTransition,
   canEditShippingFee,
@@ -31,16 +40,90 @@ function refresh(orderId: string) {
   revalidatePath("/admin");
 }
 
+type Tx = Prisma.TransactionClient;
+
+/** A side effect that must commit (or roll back) with the status change; returns a log note. */
+type Effect = (tx: Tx, orderId: string) => Promise<string | null>;
+
+async function stockLines(tx: Tx, orderId: string): Promise<StockLine[]> {
+  const items = await tx.orderItem.findMany({
+    where: { orderId },
+    orderBy: { id: "asc" },
+    select: {
+      id: true,
+      productId: true,
+      quantity: true,
+      reservedQuantity: true,
+      productNameSnapshot: true,
+    },
+  });
+  return items.map((item) => ({ ...item, name: item.productNameSnapshot }));
+}
+
+/** Approval: take the ordered units off the shelf, or refuse if any product is short. */
+const reserveStock: Effect = async (tx, orderId) => {
+  const lines = await stockLines(tx, orderId);
+  const products = await tx.product.findMany({
+    where: { id: { in: lines.map((line) => line.productId) } },
+    select: { id: true, stock: true },
+  });
+  const { reservations, shortages } = planReservation(
+    lines,
+    new Map(products.map((product) => [product.id, product.stock])),
+  );
+  if (shortages.length > 0) throw new TransitionError(shortageMessage(shortages));
+
+  for (const reservation of reservations) {
+    // Conditional decrement: a concurrent change to the stock cannot push it below zero.
+    const { count } = await tx.product.updateMany({
+      where: { id: reservation.productId, stock: { gte: reservation.quantity } },
+      data: { stock: { decrement: reservation.quantity } },
+    });
+    if (count !== 1) throw new TransitionError(CONFLICT);
+    await tx.orderItem.update({
+      where: { id: reservation.itemId },
+      data: { reservedQuantity: { increment: reservation.quantity } },
+    });
+  }
+  return reservations.length > 0 ? reservationNote(reservations) : null;
+};
+
+/** Cancelling an approved order: give back exactly what approval took. */
+const releaseStock: Effect = async (tx, orderId) => {
+  const released = [];
+  for (const line of planRelease(await stockLines(tx, orderId))) {
+    const product = await tx.product.findUnique({
+      where: { id: line.productId },
+      select: { stock: true },
+    });
+    let after: number | null = null;
+    // Stock switched to unlimited since approval: nothing to add back.
+    if (product && product.stock !== null) {
+      const updated = await tx.product.update({
+        where: { id: line.productId },
+        data: { stock: { increment: line.quantity } },
+        select: { stock: true },
+      });
+      after = updated.stock;
+    }
+    await tx.orderItem.update({ where: { id: line.itemId }, data: { reservedQuantity: 0 } });
+    released.push({ name: line.name, quantity: line.quantity, after });
+  }
+  return released.length > 0 ? releaseNote(released) : null;
+};
+
 /**
  * Moves an order to `to` inside a transaction: the transition must be legal, the row is updated
  * only if it is still in the status we read (no double transitions), and the change is logged.
+ * An optional effect (stock) runs in the same transaction and is logged as its own event.
  */
 async function transition(
   orderId: string,
   to: OrderStatus,
   adminId: string,
-  options: { note?: string; data?: Prisma.OrderUpdateManyMutationInput } = {},
+  options: { note?: string; data?: Prisma.OrderUpdateManyMutationInput; effect?: Effect } = {},
 ): Promise<ActionState> {
+  let effectNote: string | null = null;
   try {
     await prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId }, select: { status: true } });
@@ -54,11 +137,19 @@ async function transition(
       await tx.orderEvent.create({
         data: { orderId, fromStatus: order.status, toStatus: to, note: options.note, adminId },
       });
+      effectNote = options.effect ? await options.effect(tx, orderId) : null;
+      if (effectNote) {
+        await tx.orderEvent.create({
+          data: { orderId, fromStatus: to, toStatus: to, note: effectNote, adminId },
+        });
+      }
     });
   } catch (error) {
     if (error instanceof TransitionError) return { ok: false, message: error.message };
     throw error;
   }
+  // Stock moved: product pages, the bag and checkout must see it immediately.
+  if (effectNote) updateTag(PRODUCTS_TAG);
   refresh(orderId);
   return { ok: true };
 }
@@ -119,6 +210,7 @@ export async function approveOrderAction(
         ? "Approved for cash on delivery."
         : "Approved. Waiting for the customer's payment.",
     data: { approvedAt: new Date(), total },
+    effect: reserveStock,
   });
   // The customer hears about it once the change is committed.
   if (result.ok) after(() => notifyOrderApproved(orderId));
@@ -224,5 +316,6 @@ export async function cancelOrderAction(
   return transition(String(formData.get("orderId") ?? ""), "CANCELLED", admin.id, {
     note: parsed.data.reason,
     data: { cancelReason: parsed.data.reason },
+    effect: releaseStock,
   });
 }

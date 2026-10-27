@@ -9,6 +9,7 @@ import {
   StatusBadge,
   tableClass,
 } from "@/components/admin/ui";
+import { LocalTime } from "@/components/LocalTime";
 import { requireAdmin } from "@/lib/auth/session";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/money";
@@ -214,11 +215,11 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
                         {order.orderNumber}
                       </span>
                       <span className="text-xs text-sand-700">
-                        {order.createdAt.toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        <LocalTime
+                          value={order.createdAt.toISOString()}
+                          options={{ day: "numeric", month: "short", year: "numeric" }}
+                          utcLabel={false}
+                        />
                       </span>
                     </Link>
                     {/* On phones the status rides under the order number. */}

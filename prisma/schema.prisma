@@ -159,6 +159,9 @@ model OrderItem {
   productNameSnapshot String
   unitPrice           Decimal @db.Decimal(10, 2)
   quantity            Int
+  /// Units taken from Product.stock when the order was approved (0 = none, e.g. unlimited
+  /// stock). Cancelling gives exactly this back.
+  reservedQuantity    Int     @default(0)
 
   @@index([orderId])
   @@index([productId])

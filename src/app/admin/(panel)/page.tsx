@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LocalTime } from "@/components/LocalTime";
 import Link from "next/link";
 import {
   ButtonLink,
@@ -14,12 +15,6 @@ import { REVENUE_STATUSES } from "@/lib/orders/workflow";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "Overview" };
-
-const dateFormat = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
 
 export default async function DashboardPage() {
   const admin = await requireAdmin();
@@ -140,7 +135,13 @@ export default async function DashboardPage() {
                       <bdi>{order.customerName}</bdi>{" "}
                       <span className="text-sand-700">· {order.country}</span>
                     </td>
-                    <td className="text-sand-700">{dateFormat.format(order.createdAt)}</td>
+                    <td className="text-sand-700">
+                      <LocalTime
+                        value={order.createdAt.toISOString()}
+                        options={{ day: "numeric", month: "short", year: "numeric" }}
+                        utcLabel={false}
+                      />
+                    </td>
                     <td>
                       <StatusBadge status={order.status} />
                     </td>

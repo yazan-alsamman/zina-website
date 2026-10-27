@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LocalTime } from "@/components/LocalTime";
 import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 import { SmartImage } from "@/components/media/SmartImage";
@@ -203,10 +204,11 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
                       </span>
                     </td>
                     <td className="text-sand-700">
-                      {product.updatedAt.toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                      })}
+                      <LocalTime
+                        value={product.updatedAt.toISOString()}
+                        options={{ day: "numeric", month: "short" }}
+                        utcLabel={false}
+                      />
                     </td>
                   </tr>
                 );

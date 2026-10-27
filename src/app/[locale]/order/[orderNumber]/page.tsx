@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { LocalTime } from "@/components/LocalTime";
 import type { Locale } from "@/i18n/routing";
 import { cn } from "@/lib/cn";
 import { fromCents, toCents } from "@/lib/money";
@@ -63,11 +64,8 @@ export default async function OrderPage({
   const tc = await getTranslations("Checkout");
   const money = (value: { toString(): string }) =>
     displayPrice(toCents(value), order.currency, locale);
-  const date = new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { dateStyle: "long" });
-  const dateTime = new Intl.DateTimeFormat(`${locale}-u-nu-latn`, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  // Dates render in the visitor's own time zone (LocalTime); stored and sent as UTC.
+  const fmtLocale = `${locale}-u-nu-latn`;
   const timeline = customerTimeline(order, order.events);
   const itemName = (item: (typeof order.items)[number]) =>
     (locale === "ar" ? item.product.nameAr : item.product.nameEn) || item.productNameSnapshot;
@@ -102,7 +100,16 @@ export default async function OrderPage({
             {t("title", { number: order.orderNumber })}
           </h1>
           <p className="mt-4 text-sm text-sand-700">
-            {t("placedOn", { date: date.format(order.createdAt) })}
+            {t.rich("placedOn", {
+              date: () => (
+                <LocalTime
+                  value={order.createdAt.toISOString()}
+                  locale={fmtLocale}
+                  options={{ dateStyle: "long" }}
+                  utcLabel={false}
+                />
+              ),
+            })}
           </p>
         </div>
         <p
@@ -210,7 +217,7 @@ export default async function OrderPage({
                     </p>
                     {entry.kind === "done" ? (
                       <p className="mt-1 text-sm text-sand-700">
-                        <time dateTime={entry.at.toISOString()}>{dateTime.format(entry.at)}</time>
+                        <LocalTime value={entry.at.toISOString()} locale={fmtLocale} />
                       </p>
                     ) : null}
                   </div>

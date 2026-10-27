@@ -1,0 +1,80 @@
+<!doctype html>
+<!--
+  Source of public/og/ar.png, the Arabic share image. next/og (Satori) does not shape Arabic
+  script, so this one is rendered once in a real browser and committed. To regenerate:
+
+    npx playwright screenshot --viewport-size "1200, 630" --wait-for-timeout 1500 \
+      "file://$PWD/scripts/og/ar.html" public/og/ar.png
+
+  Keep it in step with the English image in src/app/[locale]/opengraph-image.tsx.
+-->
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Noto+Naskh+Arabic:wght@400;500&display=block"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background:
+          radial-gradient(60% 70% at 50% 38%, rgba(184, 164, 143, 0.42), rgba(184, 164, 143, 0) 70%),
+          linear-gradient(180deg, #4a3f35 0%, #342c25 70%, #211c18 100%);
+        color: #ffffff;
+        font-family: "Noto Naskh Arabic", serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .overline {
+        font-size: 30px;
+        color: #dcd2c7;
+      }
+      .name {
+        margin-top: 6px;
+        font-size: 124px;
+        font-weight: 500;
+        line-height: 1.25;
+      }
+      .rule {
+        margin-top: 18px;
+        width: 120px;
+        height: 1px;
+        background: #b8a48f;
+      }
+      .tagline {
+        margin-top: 30px;
+        font-size: 40px;
+        color: #f1ede9;
+      }
+      .latin {
+        margin-top: 34px;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 22px;
+        letter-spacing: 0.34em;
+        margin-inline-end: -0.34em;
+        text-transform: uppercase;
+        color: #b8a48f;
+        direction: ltr;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="overline">الجمال، بعين صادقة</div>
+    <div class="name">زينة المقري</div>
+    <div class="rule"></div>
+    <div class="tagline">مراجعات صادقة لأرقى منتجات الجمال في العالم.</div>
+    <div class="latin">Zina Al Mokri</div>
+  </body>
+</html>

@@ -4,14 +4,16 @@ import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
 
 /**
- * Default share image for every page (product pages use their cover photo instead): the
- * wordmark on the night-mocha studio backdrop.
+ * Default share image for every page (product pages use their cover photo instead): the Maison
+ * logo (night version, public/brand) on the night-mocha studio backdrop.
  *
  * English is drawn here with next/og in Cormorant. next/og (Satori) cannot shape Arabic script
  * (letters would not join), so Arabic pages serve public/og/ar.png, rendered once in a browser
  * with Noto Naskh Arabic from scripts/og/ar.html.
  */
 const size = { width: 1200, height: 630 };
+/** Height of the stacked logo (viewBox 322.47 × 220). */
+const LOGO_HEIGHT = 300;
 
 const ALT = {
   en: "Zina Al Mokri: honest reviews of the world's finest beauty",
@@ -46,12 +48,11 @@ export default async function OpengraphImage({
     });
   }
 
-  const [regular, italic] = (
-    await Promise.all([
-      asset("src/assets/fonts/CormorantGaramond-Regular.ttf"),
-      asset("src/assets/fonts/CormorantGaramond-Italic.ttf"),
-    ])
-  ).map(bytes);
+  const [logo, regular, italic] = await Promise.all([
+    asset("public/brand/logo-night.svg"),
+    asset("src/assets/fonts/CormorantGaramond-Regular.ttf"),
+    asset("src/assets/fonts/CormorantGaramond-Italic.ttf"),
+  ]);
 
   return new ImageResponse(
     <div
@@ -73,27 +74,23 @@ export default async function OpengraphImage({
       >
         Beauty, reviewed
       </div>
-      <div
-        style={{
-          marginTop: 34,
-          fontSize: 96,
-          letterSpacing: 30,
-          paddingLeft: 30,
-          textTransform: "uppercase",
-        }}
-      >
-        Zina Al Mokri
-      </div>
-      <div style={{ marginTop: 42, width: 120, height: 1, background: "#b8a48f" }} />
-      <div style={{ marginTop: 40, fontSize: 40, fontStyle: "italic", color: "#f1ede9" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- rendered by next/og, not the DOM */}
+      <img
+        src={`data:image/svg+xml;base64,${logo}`}
+        alt=""
+        width={Math.round((LOGO_HEIGHT * 322.47) / 220)}
+        height={LOGO_HEIGHT}
+        style={{ marginTop: 40 }}
+      />
+      <div style={{ marginTop: 44, fontSize: 40, fontStyle: "italic", color: "#f1ede9" }}>
         Honest reviews of the world&apos;s finest beauty.
       </div>
     </div>,
     {
       ...size,
       fonts: [
-        { name: "Cormorant", data: regular, style: "normal", weight: 400 },
-        { name: "Cormorant", data: italic, style: "italic", weight: 400 },
+        { name: "Cormorant", data: bytes(regular), style: "normal", weight: 400 },
+        { name: "Cormorant", data: bytes(italic), style: "italic", weight: 400 },
       ],
     },
   );

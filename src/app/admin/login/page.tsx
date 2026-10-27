@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { Logo } from "@/components/brand/Logo";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -20,7 +20,7 @@ export default function LoginPage() {
 
       <div className="flex flex-col justify-center bg-white px-6 py-16 md:px-20">
         <div className="w-full max-w-sm">
-          <Wordmark className="text-[0.85rem] text-mocha" />
+          <Logo className="h-10 text-mocha" />
           <h1 className="mt-10 font-latin-display text-h2 font-light text-mocha">
             Atelier sign in
           </h1>

@@ -8,3 +8,4 @@ skills-lock.json
 docs/screenshots/
 assets/
 .mcp.json
+src/components/brand/maison.generated.ts

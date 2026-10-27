@@ -1,7 +1,8 @@
 import { escapeHtml } from "../review-markup";
+import { absoluteUrl } from "../site-url";
 
 /**
- * Order emails: table layout (email clients), the wordmark, sand hairlines and mocha type.
+ * Order emails: table layout (email clients), the logo, sand hairlines and mocha type.
  * Customer emails are written in the order's language (Arabic is right-to-left); the owner's
  * notification is in English. Every dynamic value is escaped.
  */
@@ -135,6 +136,14 @@ function row(label: string, value: string, end: string, strong = false) {
   return `<tr><td style="padding:6px 0;color:${COLORS.sand700};font-size:14px">${escapeHtml(label)}</td><td align="${end}" style="padding:6px 0;text-align:${end};color:${COLORS.mocha};font-size:${strong ? "18px" : "14px"};${strong ? "font-family:Georgia,serif;" : ""}">${escapeHtml(value)}</td></tr>`;
 }
 
+/**
+ * The horizontal Maison lockup as a PNG (scripts/brand/build-identity.mjs): email clients do not
+ * render SVG. When images are blocked, the alt text is styled as the old wordmark.
+ */
+function logo() {
+  return `<img src="${escapeHtml(absoluteUrl("/brand/email-logo.png"))}" width="200" height="39" alt="Zina Al Mokri" style="display:block;border:0;outline:none;width:200px;height:auto;font-family:Georgia,'Times New Roman',serif;font-size:18px;letter-spacing:0.34em;color:${COLORS.mocha};text-transform:uppercase">`;
+}
+
 function layout(dir: string, lang: string, preheader: string, body: string) {
   return `<!doctype html>
 <html lang="${lang}" dir="${dir}">
@@ -143,7 +152,7 @@ function layout(dir: string, lang: string, preheader: string, body: string) {
 <span style="display:none;max-height:0;overflow:hidden;opacity:0">${escapeHtml(preheader)}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${COLORS.sand100}"><tr><td align="center" style="padding:32px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" dir="${dir}" style="max-width:600px;background:#ffffff;border:1px solid ${COLORS.sand200}">
-<tr><td align="center" style="padding:36px 32px 28px;border-bottom:1px solid ${COLORS.sand200}"><span dir="ltr" style="font-family:Georgia,'Times New Roman',serif;font-size:18px;letter-spacing:0.34em;color:${COLORS.mocha};text-transform:uppercase">Zina Al Mokri</span></td></tr>
+<tr><td align="center" style="padding:36px 32px 28px;border-bottom:1px solid ${COLORS.sand200}">${logo()}</td></tr>
 <tr><td style="padding:32px;font-family:Helvetica,Arial,sans-serif;color:${COLORS.mocha};font-size:15px;line-height:1.7" align="${dir === "rtl" ? "right" : "left"}">${body}</td></tr>
 </table>
 </td></tr></table>

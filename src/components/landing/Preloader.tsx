@@ -1,13 +1,14 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { useRef } from "react";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { useLocale, useTranslations } from "next-intl";
+import { useId, useRef } from "react";
+import { Logo } from "@/components/brand/Logo";
+import { MAISON } from "@/components/brand/maison.generated";
 import { useLandingStore } from "@/lib/landing-store";
-import { gsap, ScrollTrigger, SplitText, useGSAP } from "@/lib/gsap";
+import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { getLenis } from "@/lib/lenis";
 
-const MIN_DURATION = 1.8; // seconds: long enough for the wordmark to read
+const MIN_DURATION = 2.8; // seconds: the arch, the Ƶ and the name have drawn in
 const MAX_DURATION = 6; // never hold visitors hostage to a slow GPU
 const SESSION_KEY = "zm-intro";
 
@@ -21,11 +22,15 @@ function markSeen() {
 }
 
 /**
- * Once-per-session intro: the wordmark rises letter by letter while a hairline tracks real load
- * progress (3D chunk, drei useProgress, first rendered frame), then a curtain lifts into the hero.
+ * Once-per-session intro: the logo draws itself (the arch in one stroke, then the Ƶ and its sand
+ * cross-stroke, then the name rising letter by letter) while a hairline tracks real load progress
+ * (3D chunk, drei useProgress, first rendered frame), then a curtain lifts into the hero.
+ * The parts start hidden in CSS (globals.css) so nothing flashes before hydration.
  */
 export function Preloader() {
   const t = useTranslations("Preloader");
+  const script = useLocale() === "ar" ? "arabic" : "latin";
+  const clipId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const markRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
@@ -54,14 +59,23 @@ export function Preloader() {
     window.scrollTo(0, 0);
     getLenis()?.stop();
 
-    const split = SplitText.create(mark, { type: "chars", mask: "chars" });
-    gsap.from(split.chars, {
-      yPercent: 110,
-      stagger: 0.045,
-      duration: 1.2,
-      ease: "luxe",
-      delay: 0.15,
-    });
+    const part = (name: string) => mark.querySelectorAll<SVGElement>(`[data-logo="${name}"]`);
+    const [arch, z, cross, word, glyphs] = ["arch", "z", "cross", "word", "glyph"].map(part);
+    // In the word's own units: a glyph height and a little more, below the mask.
+    const drop = MAISON[script].height * 1.3;
+    gsap.set(word, { opacity: 1 });
+    gsap.set(glyphs, { y: drop });
+    const intro = gsap
+      .timeline({ delay: 0.15 })
+      .fromTo(arch, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.5, ease: "silk" })
+      .fromTo(z, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.9 }, "-=0.55")
+      .fromTo(
+        cross,
+        { opacity: 0, scaleX: 0, transformOrigin: "50% 50%" },
+        { opacity: 1, scaleX: 1, duration: 0.7, ease: "silk" },
+        "-=0.5",
+      )
+      .to(glyphs, { y: 0, stagger: 0.045, duration: 1.1 }, "-=0.35");
 
     const started = performance.now();
     let shown = 0;
@@ -81,7 +95,12 @@ export function Preloader() {
       gsap
         .timeline({ onComplete: () => gsap.set(root, { display: "none" }) })
         .to(line, { scaleX: 1, duration: 0.35, ease: "power2.out" })
-        .to(split.chars, { yPercent: -110, stagger: 0.025, duration: 0.7, ease: "silk" }, "+=0.1")
+        // A slow device may still be drawing: settle the logo before it leaves.
+        .add(() => {
+          intro.progress(1);
+        })
+        .to(glyphs, { y: -drop, stagger: 0.02, duration: 0.7, ease: "silk" }, "+=0.1")
+        .to([arch, z, cross], { opacity: 0, duration: 0.6, ease: "silk" }, "<0.1")
         .to(count, { autoAlpha: 0, duration: 0.3 }, "<")
         .to(root, { clipPath: "inset(0% 0% 100% 0%)", duration: 1.25, ease: "silk" }, "-=0.25")
         // Let the hero begin while the curtain is still lifting.
@@ -107,7 +126,7 @@ export function Preloader() {
 
     return () => {
       gsap.ticker.remove(tick);
-      split.revert();
+      intro.kill();
       if (!exiting) finish();
     };
   });
@@ -120,8 +139,14 @@ export function Preloader() {
       className="preloader fixed inset-0 z-50 grid place-items-center bg-mocha text-white [clip-path:inset(0%_0%_0%_0%)]"
     >
       <div className="flex flex-col items-center gap-8">
-        <div ref={markRef}>
-          <Wordmark className="text-[clamp(1.1rem,0.7rem+1.6vw,2rem)]" />
+        <div ref={markRef} className="[--logo-accent:var(--color-sand-200)]">
+          <Logo
+            decorative
+            layout="stacked"
+            script={script}
+            clipId={clipId}
+            className="h-[clamp(9rem,6rem+12vh,13rem)]"
+          />
         </div>
         <div className="h-px w-[min(56vw,18rem)] bg-white/15">
           <div ref={lineRef} className="h-full origin-left scale-x-0 bg-sand rtl:origin-right" />

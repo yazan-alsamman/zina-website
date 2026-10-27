@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { logoutAction } from "@/app/admin/auth-actions";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { Logo } from "@/components/brand/Logo";
 import type { AdminSession } from "@/lib/auth/session";
 import { AdminNav } from "./AdminNav";
 
@@ -14,8 +14,12 @@ export function AdminShell({ admin, children }: { admin: AdminSession; children:
     <div className="min-h-dvh md:grid md:grid-cols-[15rem_1fr]">
       <aside className="flex flex-col gap-8 bg-mocha px-6 py-6 text-sand-100 md:sticky md:top-0 md:h-dvh md:py-10">
         <div className="flex items-center justify-between md:block">
-          <Link href="/admin" className="block text-sand-100">
-            <Wordmark className="text-[0.8rem]" />
+          <Link
+            href="/admin"
+            aria-label="Zina Al Mokri, dashboard"
+            className="block text-sand-100 [--logo-accent:var(--color-sand-200)]"
+          >
+            <Logo decorative className="h-9" />
           </Link>
           <p className="label mt-0 text-sand md:mt-3">Atelier</p>
         </div>

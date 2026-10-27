@@ -249,16 +249,28 @@ html[data-intro="seen"] .preloader {
   display: none;
 }
 
+/* Logo parts start hidden; the preloader draws them in (Preloader.tsx). */
+.preloader [data-logo="arch"] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.preloader :is([data-logo="z"], [data-logo="cross"], [data-logo="word"]) {
+  opacity: 0;
+}
+
 /* Header sits over the night hero on the landing page. */
 .site-header {
   --header-fg: var(--color-mocha);
   --header-muted: var(--color-sand-700);
+  --logo-accent: var(--color-sand);
   color: var(--header-fg);
 }
 
 .site-footer {
   --header-fg: var(--color-white);
   --header-muted: var(--color-sand-200);
+  --logo-accent: var(--color-sand-200);
 }
 
 /* Ignores the landing page while Next.js keeps it hidden in the background after a navigation
@@ -266,6 +278,7 @@ html[data-intro="seen"] .preloader {
 body:has([data-header-tone="light"]:not([style*="display: none"])) .site-header {
   --header-fg: var(--color-white);
   --header-muted: var(--color-sand-200);
+  --logo-accent: var(--color-sand-200);
   position: absolute;
   inset-inline: 0;
   top: 0;

@@ -1,6 +1,6 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Suspense } from "react";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { Logo } from "@/components/brand/Logo";
 import { BagButton } from "@/components/shop/BagButton";
 import { Link } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -12,11 +12,16 @@ const links = [
 
 export function SiteHeader() {
   const t = useTranslations("Navigation");
+  const locale = useLocale();
 
   return (
     <header className="site-header relative z-20 flex items-center justify-between gap-6 px-gutter py-7">
       <Link href="/" aria-label={t("home")} className="text-(--header-fg)">
-        <Wordmark className="text-[clamp(0.8rem,0.7rem+0.35vw,1.05rem)]" />
+        <Logo
+          decorative
+          script={locale === "ar" ? "arabic" : "latin"}
+          className="h-[clamp(2.1rem,1.8rem+0.9vw,2.8rem)]"
+        />
       </Link>
       <div className="flex items-center gap-5 sm:gap-12">
         <nav aria-label={t("label")} className="hidden sm:block">

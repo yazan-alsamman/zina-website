@@ -121,6 +121,12 @@ export const productSchema = z.object({
     .pipe(z.number().int("Whole units only").min(0).max(1_000_000).nullable()),
   brandId: z.string().min(1, "Choose a brand"),
   isPublished: z.boolean(),
+  isFeatured: z.boolean(),
+  featuredOrder: z
+    .string()
+    .trim()
+    .transform((value) => (value === "" ? null : Number(value)))
+    .pipe(z.number().int("Whole numbers only").min(1, "Use 1 or more").max(99).nullable()),
   slug: slugField,
   images: z.array(productImageSchema).max(MAX_PRODUCT_IMAGES, `Up to ${MAX_PRODUCT_IMAGES} images`),
 });
@@ -130,6 +136,23 @@ export const shippedSchema = z.object({
   trackingNumber: optionalText(80),
   carrier: optionalText(60),
 });
+export const paymentUrlSchema = z.object({
+  paymentUrl: z
+    .string()
+    .trim()
+    .max(2000, "Keep the link under 2000 characters")
+    .refine((value) => {
+      if (value === "") return true;
+      try {
+        const url = new URL(value);
+        return url.protocol === "https:" && Boolean(url.hostname) && !url.username && !url.password;
+      } catch {
+        return false;
+      }
+    }, "Paste a full https:// payment link")
+    .transform((value) => (value === "" ? null : value)),
+});
+
 export const cancelSchema = z.object({
   reason: z.string().trim().min(3, "Tell the team why the order is cancelled").max(500),
 });

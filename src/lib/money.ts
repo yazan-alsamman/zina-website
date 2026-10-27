@@ -57,9 +57,32 @@ export function computeTotal(subtotal: MoneyInput, shippingFee: MoneyInput | nul
 }
 
 export function formatMoney(value: MoneyInput, currency: string, locale = "en-US") {
-  return new Intl.NumberFormat(`${locale}-u-nu-latn`, {
+  return formatCurrency(toCents(value) / 100, currency, locale, 2);
+}
+
+/**
+ * Locale-aware currency formatting with Latin digits. Arabic keeps its own layout (amount, then
+ * symbol) but uses the familiar narrow symbol: "420 $" rather than "420 US$".
+ */
+export function formatCurrency(
+  amount: number,
+  currency: string,
+  locale: string,
+  minimumFractionDigits: number,
+) {
+  const format = new Intl.NumberFormat(`${locale}-u-nu-latn`, {
     style: "currency",
     currency,
-    minimumFractionDigits: 2,
-  }).format(toCents(value) / 100);
+    minimumFractionDigits,
+    maximumFractionDigits: 2,
+  });
+  if (!locale.startsWith("ar")) return format.format(amount);
+  const symbol =
+    new Intl.NumberFormat("en-US", { style: "currency", currency, currencyDisplay: "narrowSymbol" })
+      .formatToParts(0)
+      .find((part) => part.type === "currency")?.value ?? currency;
+  return format
+    .formatToParts(amount)
+    .map((part) => (part.type === "currency" ? symbol : part.value))
+    .join("");
 }

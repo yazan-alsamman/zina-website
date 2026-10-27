@@ -1,13 +1,8 @@
-import { mediaUrl } from "@/lib/media/url";
 import { cn } from "@/lib/cn";
+import { mediaUrl } from "@/lib/media/url";
+import type { SmartAsset } from "@/lib/shop/types";
 
-export type SmartAsset = {
-  dir: string;
-  widths: number[];
-  width: number;
-  height: number;
-  lqip: string;
-};
+export type { SmartAsset };
 
 type SmartImageProps = {
   asset: SmartAsset;

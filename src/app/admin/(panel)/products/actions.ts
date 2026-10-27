@@ -39,6 +39,8 @@ export async function saveProductAction(
     stock: text("stock"),
     brandId: text("brandId"),
     isPublished: formData.get("isPublished") === "on",
+    isFeatured: formData.get("isFeatured") === "on",
+    featuredOrder: text("featuredOrder"),
     slug: text("slug"),
     images: parseImages(formData.get("images")),
   });
@@ -117,6 +119,8 @@ export async function saveProductAction(
     currency: data.currency,
     stock: data.stock,
     isPublished: data.isPublished,
+    isFeatured: data.isFeatured,
+    featuredOrder: data.isFeatured ? data.featuredOrder : null,
     brandId: data.brandId,
   };
 

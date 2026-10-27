@@ -8,8 +8,12 @@
     "home": "Home",
     "products": "Products",
     "about": "About",
-    "cart": "Cart",
-    "skip": "Skip to content"
+    "cart": "Bag",
+    "skip": "Skip to content",
+    "checkout": "Checkout",
+    "shipping": "Shipping",
+    "privacy": "Privacy",
+    "terms": "Terms"
   },
   "LanguageSwitcher": {
     "label": "Language"
@@ -90,27 +94,305 @@
   "Footer": {
     "navLabel": "Footer",
     "instagram": "Instagram",
-    "rights": "© {year} Zina Al Mokri. All rights reserved."
-  },
-  "ProductsPage": {
-    "title": "Products",
-    "body": "The collection will appear here."
-  },
-  "ProductPage": {
-    "title": "Product",
-    "body": "Details for “{slug}” will appear here."
-  },
-  "AboutPage": {
-    "title": "About",
-    "body": "The story behind the selection will appear here."
-  },
-  "CartPage": {
-    "title": "Your cart",
-    "body": "Your cart is empty."
+    "rights": "© {year} Zina Al Mokri. All rights reserved.",
+    "legalLabel": "Information"
   },
   "NotFound": {
     "title": "Page not found",
     "body": "The page you are looking for does not exist.",
     "back": "Back to home"
+  },
+  "Shop": {
+    "rating": "Zina's rating: {rating} out of 5",
+    "notRated": "Not yet rated",
+    "outOfStock": "Sold out",
+    "lowStock": "Only {count} left",
+    "addToBag": "Add to bag",
+    "added": "Added to your bag",
+    "orderWhatsapp": "Order on WhatsApp",
+    "quantity": "Quantity",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity",
+    "view": "View"
+  },
+  "Catalog": {
+    "title": "The collection",
+    "overline": "Reviewed by Zina",
+    "intro": "Every product here was tested on Zina's own skin first. A short list of what she would buy again.",
+    "refine": "Refine",
+    "brand": "House",
+    "rating": "Zina's rating",
+    "anyRating": "Any rating",
+    "ratingAtLeast": "{rating} and above",
+    "price": "Price ({currency})",
+    "min": "From",
+    "max": "To",
+    "sort": "Sort",
+    "sorts": {
+      "newest": "Newest",
+      "rating": "Highest rated",
+      "price-asc": "Price, low to high",
+      "price-desc": "Price, high to low"
+    },
+    "search": "Search",
+    "searchPlaceholder": "Search by name or house",
+    "apply": "Apply",
+    "clear": "Clear all",
+    "results": "{count, plural, =0 {No products} one {# product} other {# products}}",
+    "loadMore": "Show more",
+    "showing": "Showing {shown} of {total}",
+    "emptyTitle": "The first reviews are arriving soon",
+    "emptyBody": "Zina is testing the first products for the collection. Follow along on Instagram in the meantime.",
+    "noMatchTitle": "Nothing matches, yet",
+    "noMatchBody": "Try fewer filters, or another house.",
+    "filtersLabel": "Filter and sort the collection"
+  },
+  "Product": {
+    "breadcrumb": "Breadcrumb",
+    "collection": "The collection",
+    "review": "Zina's review",
+    "details": "Details",
+    "related": "More from {brand}",
+    "relatedOthers": "You may also like",
+    "gallery": "Product images",
+    "openImage": "Enlarge image {index} of {total}",
+    "showImage": "Show image {index}",
+    "close": "Close",
+    "previous": "Previous image",
+    "next": "Next image",
+    "imageCount": "Image {index} of {total}",
+    "noReview": "Zina's full review is on its way."
+  },
+  "Bag": {
+    "title": "Your bag",
+    "open": "{count, plural, =0 {Bag, empty} one {Bag, # item} other {Bag, # items}}",
+    "close": "Close bag",
+    "empty": "Your bag is empty",
+    "emptyBody": "Discover what Zina would buy again.",
+    "browse": "Browse the collection",
+    "removeItem": "Remove {name}",
+    "remove": "Remove",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "shippingTbc": "To be confirmed",
+    "checkout": "Checkout",
+    "viewBag": "View bag",
+    "loading": "Updating your bag…",
+    "removed": "{count, plural, one {An item in your bag is} other {# items in your bag are}} no longer available and {count, plural, one {was} other {were}} removed.",
+    "dismiss": "Dismiss",
+    "each": "{price} each"
+  },
+  "Checkout": {
+    "title": "Checkout",
+    "overline": "Almost yours",
+    "contact": "Contact",
+    "shippingAddress": "Shipping address",
+    "payment": "Payment",
+    "notes": "Notes for Zina's team",
+    "summary": "Your order",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "phoneCountry": "Country code",
+    "whatsapp": "WhatsApp number",
+    "whatsappHint": "Optional, if different from your phone.",
+    "country": "Country",
+    "city": "City",
+    "addressLine1": "Address",
+    "addressLine2": "Apartment, building, floor",
+    "postalCode": "Postal code",
+    "optional": "Optional",
+    "notesPlaceholder": "Gift wrapping, delivery times, anything we should know.",
+    "methods": {
+      "CASH_ON_DELIVERY": {
+        "title": "Cash on delivery",
+        "body": "Pay when it arrives."
+      },
+      "CARD": {
+        "title": "Card",
+        "body": "After we confirm the shipping fee, you'll receive a secure payment link."
+      },
+      "WHATSAPP": {
+        "title": "WhatsApp",
+        "body": "Complete your order with our team on WhatsApp."
+      }
+    },
+    "notice": "Shipping to your country is calculated by our team and confirmed before anything is charged.",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "shippingTbc": "To be confirmed",
+    "total": "Total",
+    "totalTbc": "Confirmed after review",
+    "placeOrder": "Place order",
+    "placing": "Placing your order…",
+    "editBag": "Edit bag",
+    "emptyTitle": "Your bag is empty",
+    "emptyBody": "Add something Zina recommends, then come back here.",
+    "company": "Company",
+    "errors": {
+      "required": "Please fill this in.",
+      "tooLong": "This is a little too long.",
+      "email": "Please enter a valid email address.",
+      "phone": "Please enter a valid number for the selected country code.",
+      "country": "Please choose a country.",
+      "payment": "Please choose how you would like to pay.",
+      "empty": "Your bag is empty.",
+      "invalid": "Something went wrong. Please refresh the page and try again.",
+      "fields": "Please check the highlighted fields.",
+      "unavailable": "Some items are no longer available. We updated your bag, please review it.",
+      "stock": "We do not have enough of an item in stock. Please lower the quantity.",
+      "currency": "Items in different currencies cannot be ordered together.",
+      "rateLimited": "Too many orders from this connection. Please try again in a few minutes.",
+      "server": "We could not place your order. Please try again."
+    }
+  },
+  "Order": {
+    "title": "Order {number}",
+    "overline": "Your order",
+    "intro": "We received your order. Zina's team will confirm shipping to your country and the final total.",
+    "keepLink": "Keep this page's link to follow your order. It is private to you.",
+    "statuses": {
+      "PENDING_REVIEW": "Received",
+      "AWAITING_PAYMENT": "Awaiting payment",
+      "APPROVED": "Confirmed",
+      "SHIPPED": "On its way",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled"
+    },
+    "timeline": "Progress",
+    "events": {
+      "placed": "Order received",
+      "confirmed": "Shipping confirmed, awaiting payment",
+      "approved": "Order confirmed",
+      "paid": "Payment received",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "upcoming": {
+      "review": "Shipping and total confirmed",
+      "payment": "Payment",
+      "shipped": "Shipped",
+      "delivered": "Delivered"
+    },
+    "items": "Items",
+    "quantity": "Qty {count}",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "shippingTbc": "To be confirmed",
+    "total": "Total",
+    "totalTbc": "After review",
+    "paymentMethod": "Payment",
+    "paySecurely": "Pay securely",
+    "payBody": "Your total is confirmed. Pay with the secure link from our payment partner.",
+    "paid": "Paid",
+    "carrier": "Carrier",
+    "trackingNumber": "Tracking number",
+    "continueWhatsapp": "Continue on WhatsApp",
+    "whatsappBody": "Send us your order on WhatsApp so our team can complete it with you.",
+    "shipTo": "Shipping to",
+    "placedOn": "Placed {date}",
+    "help": "Questions? Reply to your confirmation email or message us on WhatsApp.",
+    "cancelledBody": "This order was cancelled. If this is unexpected, please contact us."
+  },
+  "Pages": {
+    "draft": "DRAFT, to be reviewed",
+    "draftNote": "Placeholder text. It will be reviewed before launch and is not legal advice.",
+    "about": {
+      "title": "About Zina",
+      "overline": "The person behind the reviews",
+      "lead": "Zina Al Mokri reviews the world's finest beauty with one rule: she only recommends what she would buy again with her own money.",
+      "sections": [
+        {
+          "title": "How she reviews",
+          "body": "Every product is worn for at least two weeks, in daylight, under make-up and on bare skin. Notes are taken on day one, day seven and day fourteen, and only then does a verdict reach Instagram or this site."
+        },
+        {
+          "title": "No paid verdicts",
+          "body": "Houses send their newest work, but no review is ever paid for and no house sees a review before it is published. If something does not work, she says so, kindly and clearly."
+        },
+        {
+          "title": "Why a shop",
+          "body": "Followers kept asking where to find what she recommends, in their country and with honest shipping. The shop exists for that: a short list, confirmed shipping, and a person at the other end of every order."
+        }
+      ],
+      "portrait": "Portrait of Zina Al Mokri",
+      "studio": "Zina's review table",
+      "cta": "Browse the collection"
+    },
+    "shipping": {
+      "title": "Shipping & delivery",
+      "lead": "We ship worldwide. Because rates and customs differ by country, our team confirms your shipping fee personally before anything is charged.",
+      "sections": [
+        {
+          "title": "How shipping is calculated",
+          "body": "After you place an order, we check the best carrier for your address and confirm the shipping fee and the final total by email (and on WhatsApp if you chose it). You only pay once you have seen the final total."
+        },
+        {
+          "title": "Delivery times",
+          "body": "Most orders leave within two working days of confirmation. Delivery usually takes 2 to 5 working days in the GCC and 4 to 10 working days elsewhere."
+        },
+        {
+          "title": "Customs and duties",
+          "body": "Some countries charge import duties or taxes on arrival. We tell you when we confirm your order if this is likely for your country."
+        },
+        {
+          "title": "Tracking",
+          "body": "When your order ships you receive the carrier and tracking number by email, and you can follow it on your private order page."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "lead": "This policy explains what personal data we collect when you order, why, and how long we keep it.",
+      "sections": [
+        {
+          "title": "What we collect",
+          "body": "Your name, email, phone and WhatsApp number, shipping address and order details. We do not store card numbers: card payments happen with our payment partner."
+        },
+        {
+          "title": "Why we use it",
+          "body": "To process and deliver your order, to contact you about it, and to meet our legal and accounting obligations. We do not sell your data or use it for advertising."
+        },
+        {
+          "title": "Who we share it with",
+          "body": "Only the carrier delivering your order, our payment partner for card payments, and the email provider that sends our order emails."
+        },
+        {
+          "title": "How long we keep it",
+          "body": "Order records are kept for as long as the law requires for accounting, then deleted."
+        },
+        {
+          "title": "Your rights",
+          "body": "You can ask for a copy of your data, for corrections, or for deletion where the law allows. Write to us and we will reply within 30 days."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Terms of sale",
+      "lead": "These terms apply to orders placed on this site.",
+      "sections": [
+        {
+          "title": "Orders",
+          "body": "Placing an order is a request to buy. A contract is formed when we confirm your order and its final total, including shipping."
+        },
+        {
+          "title": "Prices",
+          "body": "Prices are shown in the listed currency and cover the product only. Shipping is confirmed separately before payment."
+        },
+        {
+          "title": "Payment",
+          "body": "You can pay cash on delivery, by card through a secure payment link, or arrange payment with our team on WhatsApp."
+        },
+        {
+          "title": "Returns",
+          "body": "For hygiene reasons, opened beauty products cannot be returned. Unopened products can be returned within 14 days of delivery."
+        },
+        {
+          "title": "Reviews",
+          "body": "Reviews reflect Zina's personal experience. Results vary from person to person."
+        }
+      ]
+    }
   }
 }

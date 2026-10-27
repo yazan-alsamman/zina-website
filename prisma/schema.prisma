@@ -51,6 +51,9 @@ model Product {
   /// null = stock not tracked
   stock         Int?
   isPublished   Boolean        @default(false)
+  /// Shown in the landing "The Edit" (published products only), ordered by featuredOrder
+  isFeatured    Boolean        @default(false)
+  featuredOrder Int?
   brandId       String
   brand         Brand          @relation(fields: [brandId], references: [id], onDelete: Restrict)
   images        ProductImage[]
@@ -60,6 +63,7 @@ model Product {
 
   @@index([isPublished])
   @@index([brandId])
+  @@index([isFeatured, featuredOrder])
 }
 
 model ProductImage {
@@ -101,8 +105,12 @@ model MediaAsset {
 
 model Order {
   id             String        @id @default(cuid())
-  /// Human-readable reference shown to customers, e.g. "ZM-2026-00042"
+  /// Human-readable reference shown to customers, e.g. "ZAM-2026-000123"
   orderNumber    String        @unique
+  /// Random secret (base64url) that unlocks the customer's tracking page
+  publicToken    String        @unique
+  /// Sent by the client with the checkout form so a double submit creates one order
+  idempotencyKey String?       @unique
   status         OrderStatus   @default(PENDING_REVIEW)
   customerName   String
   email          String
@@ -130,9 +138,12 @@ model Order {
   trackingNumber String?
   carrier        String?
   cancelReason   String?       @db.Text
+  /// Secure payment link pasted by an admin for card orders
+  paymentUrl     String?       @db.Text
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   approvedAt     DateTime?
+  paidAt         DateTime?
 
   @@index([status])
   @@index([createdAt])

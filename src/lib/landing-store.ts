@@ -15,6 +15,11 @@ type LandingState = {
   pointer: { x: number; y: number };
   /** True while a 3D-backed section is on screen; the render loop sleeps otherwise. */
   stageActive: boolean;
+  /**
+   * False while the landing route is kept hidden in the background after navigating away
+   * (Next.js keeps recent routes mounted in an <Activity>); the render loop sleeps then too.
+   */
+  pageVisible: boolean;
   /** 0 → 1 load progress for the preloader (3D chunk, drei useProgress, first frame). */
   loadProgress: number;
   /** The 3D scene compiled and rendered its first frame (or WebGL is unavailable). */
@@ -38,6 +43,7 @@ export const useLandingStore = create<LandingState & LandingActions>()((set) => 
   velocity: 0,
   pointer: { x: 0, y: 0 },
   stageActive: true,
+  pageVisible: true,
   loadProgress: 0,
   sceneReady: false,
   introDone: false,

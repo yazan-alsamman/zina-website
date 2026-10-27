@@ -11,6 +11,7 @@ import {
   whatsappMessage,
 } from "@/lib/orders/workflow";
 import { prisma } from "@/lib/prisma";
+import { absoluteUrl, trackingPath } from "@/lib/site-url";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { OrderWorkflow } from "./OrderWorkflow";
 
@@ -36,6 +37,10 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
   if (!order) notFound();
 
   const money = (value: { toString(): string } | number) => formatMoney(value, order.currency);
+  // The private tracking link, to paste into a WhatsApp or email reply.
+  const customerPage = absoluteUrl(
+    trackingPath(order.locale, order.orderNumber, order.publicToken),
+  );
   const contact = order.whatsapp || order.phone;
   const waLink = order.total
     ? whatsappLink(contact, whatsappMessage({ ...order, total: order.total }))
@@ -149,6 +154,9 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
                 approvalTarget: approvalTarget(order.paymentMethod),
                 trackingNumber: order.trackingNumber ?? "",
                 carrier: order.carrier ?? "",
+                paymentMethod: order.paymentMethod,
+                paymentUrl: order.paymentUrl ?? "",
+                paid: order.paidAt !== null,
               }}
             />
           </Panel>
@@ -173,7 +181,30 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
                 }
               />
               {order.whatsapp ? <Item label="WhatsApp" value={order.whatsapp} /> : null}
-              <Item label="Payment" value={PAYMENT_LABELS[order.paymentMethod]} />
+              <Item
+                label="Payment"
+                value={
+                  order.paidAt
+                    ? `${PAYMENT_LABELS[order.paymentMethod]} · paid ${when.format(order.paidAt)} UTC`
+                    : PAYMENT_LABELS[order.paymentMethod]
+                }
+              />
+              <Item
+                label="Customer's order page"
+                value={
+                  <span className="flex flex-wrap items-center gap-3">
+                    <a
+                      href={customerPage}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-4"
+                    >
+                      Open
+                    </a>
+                    <CopyLinkButton link={customerPage} label="Copy link" variant="quiet" />
+                  </span>
+                }
+              />
               <Item
                 label="Address"
                 value={

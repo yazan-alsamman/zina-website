@@ -1,13 +1,13 @@
 import { useTranslations } from "next-intl";
 import { Suspense } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
+import { BagButton } from "@/components/shop/BagButton";
 import { Link } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const links = [
   { href: "/products", key: "products" },
   { href: "/about", key: "about" },
-  { href: "/cart", key: "cart" },
 ] as const;
 
 export function SiteHeader() {
@@ -18,7 +18,7 @@ export function SiteHeader() {
       <Link href="/" aria-label={t("home")} className="text-(--header-fg)">
         <Wordmark className="text-[clamp(0.8rem,0.7rem+0.35vw,1.05rem)]" />
       </Link>
-      <div className="flex items-center gap-6 sm:gap-12">
+      <div className="flex items-center gap-5 sm:gap-12">
         <nav aria-label={t("label")} className="hidden sm:block">
           <ul className="flex gap-9">
             {links.map(({ href, key }) => (
@@ -37,6 +37,7 @@ export function SiteHeader() {
         <Suspense fallback={<div className="h-5 w-32" />}>
           <LanguageSwitcher />
         </Suspense>
+        <BagButton />
       </div>
     </header>
   );

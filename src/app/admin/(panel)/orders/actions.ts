@@ -1,15 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import type { Prisma } from "@/generated/prisma/client";
 import {
   type ActionState,
   cancelSchema,
   fieldErrors,
+  paymentUrlSchema,
   shippedSchema,
   shippingFeeSchema,
 } from "@/lib/admin/schemas";
 import { requireAdmin } from "@/lib/auth/session";
+import { notifyOrderApproved, notifyOrderShipped, notifyPaymentLink } from "@/lib/email/notify";
 import { computeTotal, formatMoney, fromCents, parseAmount } from "@/lib/money";
 import {
   assertTransition,
@@ -110,19 +113,71 @@ export async function approveOrderAction(
     throw error;
   }
   const total = fromCents(computeTotal(order.subtotal, order.shippingFee));
-  return transition(orderId, target, admin.id, {
+  const result = await transition(orderId, target, admin.id, {
     note:
       target === "APPROVED"
         ? "Approved for cash on delivery."
         : "Approved. Waiting for the customer's payment.",
     data: { approvedAt: new Date(), total },
   });
+  // The customer hears about it once the change is committed.
+  if (result.ok) after(() => notifyOrderApproved(orderId));
+  return result;
+}
+
+/** Card orders: the secure payment link the customer sees on their order page and by email. */
+export async function setPaymentUrlAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const admin = await requireAdmin();
+  const orderId = String(formData.get("orderId") ?? "");
+  const parsed = paymentUrlSchema.safeParse({ paymentUrl: formData.get("paymentUrl") ?? "" });
+  if (!parsed.success) return fieldErrors(parsed.error, formData);
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { status: true, paymentMethod: true, paidAt: true, paymentUrl: true },
+  });
+  if (!order) return { ok: false, message: "This order no longer exists." };
+  if (order.paymentMethod !== "CARD") {
+    return { ok: false, message: "Payment links are only for card orders." };
+  }
+  if (order.paidAt || !["PENDING_REVIEW", "AWAITING_PAYMENT"].includes(order.status)) {
+    return { ok: false, message: "The payment link is locked once the order is paid." };
+  }
+  const paymentUrl = parsed.data.paymentUrl;
+  if (paymentUrl === order.paymentUrl) return { ok: true, message: "No changes." };
+
+  await prisma.$transaction([
+    prisma.order.update({ where: { id: orderId }, data: { paymentUrl } }),
+    prisma.orderEvent.create({
+      data: {
+        orderId,
+        fromStatus: order.status,
+        toStatus: order.status,
+        adminId: admin.id,
+        note: paymentUrl ? "Payment link saved." : "Payment link removed.",
+      },
+    }),
+  ]);
+  // Already approved: send the link now. Before approval it goes out with the approval email.
+  if (paymentUrl && order.status === "AWAITING_PAYMENT") after(() => notifyPaymentLink(orderId));
+  refresh(orderId);
+  return {
+    ok: true,
+    message:
+      paymentUrl && order.status === "AWAITING_PAYMENT"
+        ? "Payment link saved and sent to the customer."
+        : "Payment link saved.",
+  };
 }
 
 export async function markPaidAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const admin = await requireAdmin();
   return transition(String(formData.get("orderId") ?? ""), "APPROVED", admin.id, {
     note: "Payment received.",
+    data: { paidAt: new Date() },
   });
 }
 
@@ -140,10 +195,13 @@ export async function markShippedAction(
   const note = [carrier && `Carrier: ${carrier}`, trackingNumber && `Tracking: ${trackingNumber}`]
     .filter(Boolean)
     .join(" · ");
-  return transition(String(formData.get("orderId") ?? ""), "SHIPPED", admin.id, {
+  const orderId = String(formData.get("orderId") ?? "");
+  const result = await transition(orderId, "SHIPPED", admin.id, {
     note: note || "Shipped.",
     data: { trackingNumber, carrier },
   });
+  if (result.ok) after(() => notifyOrderShipped(orderId));
+  return result;
 }
 
 export async function markDeliveredAction(

@@ -2,10 +2,13 @@ import type { Metadata, Viewport } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { ViewTransition } from "react";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CustomCursor } from "@/components/motion/CustomCursor";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
+import { BagDrawer } from "@/components/shop/BagDrawer";
+import { BagProvider } from "@/components/shop/BagProvider";
 import { getDirection, routing } from "@/i18n/routing";
 import { fontVariables } from "@/lib/fonts";
 import "../globals.css";
@@ -61,9 +64,12 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
           </a>
           <SmoothScroll />
           <CustomCursor />
+          <BagProvider />
           <SiteHeader />
-          {children}
+          {/* Route changes cross-fade (see ::view-transition rules in globals.css). */}
+          <ViewTransition default="page">{children}</ViewTransition>
           <SiteFooter />
+          <BagDrawer />
         </NextIntlClientProvider>
       </body>
     </html>

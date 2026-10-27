@@ -261,12 +261,129 @@ html[data-intro="seen"] .preloader {
   --header-muted: var(--color-sand-200);
 }
 
-body:has([data-header-tone="light"]) .site-header {
+/* Ignores the landing page while Next.js keeps it hidden in the background after a navigation
+   (React hides it with an inline display: none). */
+body:has([data-header-tone="light"]:not([style*="display: none"])) .site-header {
   --header-fg: var(--color-white);
   --header-muted: var(--color-sand-200);
   position: absolute;
   inset-inline: 0;
   top: 0;
+}
+
+/* Route changes: the page fades out quickly and the next one settles in (React <ViewTransition>
+   in the locale layout). Product images morph between card and product page (".morph"). */
+::view-transition-old(.page) {
+  animation: 240ms var(--ease-silk) both page-out;
+}
+
+::view-transition-new(.page) {
+  animation: 560ms var(--ease-luxe) 140ms both page-in;
+}
+
+::view-transition-group(.morph) {
+  animation-duration: 640ms;
+  animation-timing-function: var(--ease-luxe);
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* Bag drawer: a modal <dialog> sliding in from the inline end. */
+.bag-drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  margin: 0;
+  width: min(30rem, 100vw);
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  overflow: hidden;
+  translate: 100% 0;
+  transition:
+    translate 0.7s var(--ease-luxe),
+    overlay 0.7s allow-discrete,
+    display 0.7s allow-discrete;
+}
+
+.bag-drawer:dir(rtl) {
+  translate: -100% 0;
+}
+
+.bag-drawer[open] {
+  translate: 0 0;
+}
+
+@starting-style {
+  .bag-drawer[open] {
+    translate: 100% 0;
+  }
+
+  .bag-drawer[open]:dir(rtl) {
+    translate: -100% 0;
+  }
+}
+
+.bag-drawer::backdrop {
+  background: rgb(33 28 24 / 0);
+  backdrop-filter: blur(0);
+  transition:
+    background 0.7s var(--ease-luxe),
+    backdrop-filter 0.7s var(--ease-luxe),
+    overlay 0.7s allow-discrete,
+    display 0.7s allow-discrete;
+}
+
+.bag-drawer[open]::backdrop {
+  background: rgb(33 28 24 / 0.42);
+  backdrop-filter: blur(2px);
+}
+
+@starting-style {
+  .bag-drawer[open]::backdrop {
+    background: rgb(33 28 24 / 0);
+    backdrop-filter: blur(0);
+  }
+}
+
+/* Product lightbox fades in. */
+.lightbox {
+  opacity: 0;
+  transition:
+    opacity 0.5s var(--ease-luxe),
+    overlay 0.5s allow-discrete,
+    display 0.5s allow-discrete;
+}
+
+.lightbox[open] {
+  opacity: 1;
+}
+
+@starting-style {
+  .lightbox[open] {
+    opacity: 0;
+  }
 }
 
 /* Custom cursor replaces the system pointer only where it is active (fine pointers). */

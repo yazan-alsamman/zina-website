@@ -57,6 +57,8 @@ export default async function EditProductPage({
           stock: product.stock === null ? "" : String(product.stock),
           brandId: product.brandId,
           isPublished: product.isPublished,
+          isFeatured: product.isFeatured,
+          featuredOrder: product.featuredOrder === null ? "" : String(product.featuredOrder),
           images: product.images
             .filter((image) => image.asset)
             .map((image) => ({

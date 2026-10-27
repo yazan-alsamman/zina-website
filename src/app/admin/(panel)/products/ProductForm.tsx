@@ -34,6 +34,8 @@ export type ProductFormValues = {
   stock: string;
   brandId: string;
   isPublished: boolean;
+  isFeatured: boolean;
+  featuredOrder: string;
   images: ManagedImage[];
 };
 
@@ -259,24 +261,60 @@ export function ProductForm({
             </Field>
           </div>
 
-          <label className="mt-8 flex cursor-pointer items-center gap-4 border-t border-sand-200 pt-6">
-            <input
-              type="checkbox"
-              name="isPublished"
-              defaultChecked={
-                state.values ? state.values.isPublished === "on" : (product?.isPublished ?? false)
-              }
-              className="peer sr-only"
-            />
-            <span
-              aria-hidden
-              className="relative h-6 w-11 shrink-0 rounded-full border border-sand bg-white transition-colors peer-checked:border-mocha peer-checked:bg-mocha peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-mocha after:absolute after:top-0.5 after:left-0.5 after:size-4 after:rounded-full after:bg-sand after:transition-transform peer-checked:after:translate-x-5 peer-checked:after:bg-white"
-            />
-            <span className="flex flex-col">
-              <span className="text-sm text-mocha">Published on the site</span>
-              <span className="text-xs text-sand-700">Drafts stay hidden from visitors.</span>
-            </span>
-          </label>
+          <div className="mt-8 grid gap-6 border-t border-sand-200 pt-6 md:grid-cols-3 md:items-center">
+            <label className="flex cursor-pointer items-center gap-4">
+              <input
+                type="checkbox"
+                name="isPublished"
+                defaultChecked={
+                  state.values ? state.values.isPublished === "on" : (product?.isPublished ?? false)
+                }
+                className="peer sr-only"
+              />
+              <span
+                aria-hidden
+                className="relative h-6 w-11 shrink-0 rounded-full border border-sand bg-white transition-colors peer-checked:border-mocha peer-checked:bg-mocha peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-mocha after:absolute after:top-0.5 after:left-0.5 after:size-4 after:rounded-full after:bg-sand after:transition-transform peer-checked:after:translate-x-5 peer-checked:after:bg-white"
+              />
+              <span className="flex flex-col">
+                <span className="text-sm text-mocha">Published on the site</span>
+                <span className="text-xs text-sand-700">Drafts stay hidden from visitors.</span>
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-center gap-4">
+              <input
+                type="checkbox"
+                name="isFeatured"
+                defaultChecked={
+                  state.values ? state.values.isFeatured === "on" : (product?.isFeatured ?? false)
+                }
+                className="peer sr-only"
+              />
+              <span
+                aria-hidden
+                className="relative h-6 w-11 shrink-0 rounded-full border border-sand bg-white transition-colors peer-checked:border-mocha peer-checked:bg-mocha peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-mocha after:absolute after:top-0.5 after:left-0.5 after:size-4 after:rounded-full after:bg-sand after:transition-transform peer-checked:after:translate-x-5 peer-checked:after:bg-white"
+              />
+              <span className="flex flex-col">
+                <span className="text-sm text-mocha">Featured on landing</span>
+                <span className="text-xs text-sand-700">Shown in “The Edit” when published.</span>
+              </span>
+            </label>
+            <Field
+              label="Featured order"
+              htmlFor="featuredOrder"
+              hint="1 shows first. Used when featured."
+              errors={e.featuredOrder}
+            >
+              <input
+                id="featuredOrder"
+                name="featuredOrder"
+                inputMode="numeric"
+                placeholder="1"
+                defaultValue={v("featuredOrder") ?? ""}
+                className={inputClass}
+                {...errorProps("featuredOrder", e.featuredOrder)}
+              />
+            </Field>
+          </div>
         </Panel>
 
         <Panel

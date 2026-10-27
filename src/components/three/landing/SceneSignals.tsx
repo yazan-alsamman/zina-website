@@ -44,7 +44,8 @@ export function ReadySignal() {
 }
 
 /**
- * Puts the render loop to sleep while no 3D section is on screen. With reduced motion the
+ * Puts the render loop to sleep while no 3D section is on screen, or while the landing page is
+ * hidden in the background after a navigation. With reduced motion the
  * scene renders on demand only, when scroll state changes.
  */
 export function FrameloopController() {
@@ -54,12 +55,14 @@ export function FrameloopController() {
 
   useEffect(() => {
     const awake = still ? "demand" : "always";
-    setFrameloop(useLandingStore.getState().stageActive ? awake : "never");
+    const running = (state: { stageActive: boolean; pageVisible: boolean }) =>
+      state.stageActive && state.pageVisible;
+    setFrameloop(running(useLandingStore.getState()) ? awake : "never");
 
     return useLandingStore.subscribe((state, prev) => {
-      if (state.stageActive !== prev.stageActive) {
-        setFrameloop(state.stageActive ? awake : "never");
-        if (state.stageActive) invalidate();
+      if (running(state) !== running(prev)) {
+        setFrameloop(running(state) ? awake : "never");
+        if (running(state)) invalidate();
       }
       if (still && (state.hero !== prev.hero || state.journey !== prev.journey)) invalidate();
     });

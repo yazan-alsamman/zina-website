@@ -4,13 +4,14 @@ import { useActionState } from "react";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import { buttonClass, errorProps, Field, FormMessage, inputClass } from "@/components/admin/ui";
 import type { ActionState } from "@/lib/admin/schemas";
-import type { OrderStatus } from "@/lib/orders/workflow";
+import type { OrderStatus, PaymentMethod } from "@/lib/orders/workflow";
 import {
   approveOrderAction,
   cancelOrderAction,
   markDeliveredAction,
   markPaidAction,
   markShippedAction,
+  setPaymentUrlAction,
   setShippingFeeAction,
 } from "../actions";
 
@@ -22,6 +23,9 @@ type WorkflowOrder = {
   approvalTarget: OrderStatus;
   trackingNumber: string;
   carrier: string;
+  paymentMethod: PaymentMethod;
+  paymentUrl: string;
+  paid: boolean;
 };
 
 /** Shows only the actions that are legal for the order's current status. */
@@ -38,6 +42,11 @@ export function OrderWorkflow({ order }: { order: WorkflowOrder }) {
     {},
   );
   const [cancelState, cancelAction] = useActionState<ActionState, FormData>(cancelOrderAction, {});
+  const [linkState, linkAction] = useActionState<ActionState, FormData>(setPaymentUrlAction, {});
+  const canSetLink =
+    order.paymentMethod === "CARD" &&
+    !order.paid &&
+    (order.status === "PENDING_REVIEW" || order.status === "AWAITING_PAYMENT");
   const hidden = <input type="hidden" name="orderId" value={order.id} />;
   const canCancel = ["PENDING_REVIEW", "AWAITING_PAYMENT", "APPROVED"].includes(order.status);
 
@@ -83,6 +92,37 @@ export function OrderWorkflow({ order }: { order: WorkflowOrder }) {
             ) : null}
           </form>
         </>
+      ) : null}
+
+      {canSetLink ? (
+        <form action={linkAction} className="flex flex-col gap-3" noValidate>
+          {hidden}
+          <Field
+            label="Payment link"
+            htmlFor="paymentUrl"
+            hint={
+              order.status === "PENDING_REVIEW"
+                ? "Sent with the approval email and shown on the customer's order page."
+                : "Shown on the customer's order page. Saving emails it to the customer."
+            }
+            errors={linkState.errors?.paymentUrl}
+          >
+            <div className="flex gap-2">
+              <input
+                id="paymentUrl"
+                name="paymentUrl"
+                type="url"
+                inputMode="url"
+                placeholder="https://"
+                defaultValue={linkState.values?.paymentUrl ?? order.paymentUrl}
+                className={inputClass}
+                {...errorProps("paymentUrl", linkState.errors?.paymentUrl)}
+              />
+              <SubmitButton variant="secondary">Save</SubmitButton>
+            </div>
+          </Field>
+          <FormMessage state={linkState.errors ? {} : linkState} />
+        </form>
       ) : null}
 
       {order.status === "AWAITING_PAYMENT" ? (

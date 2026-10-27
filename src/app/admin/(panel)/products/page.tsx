@@ -193,7 +193,14 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
                       {formatMoney(product.price, product.currency)}
                     </td>
                     <td>
-                      <PublishedBadge published={product.isPublished} />
+                      <span className="flex flex-wrap items-center gap-2">
+                        <PublishedBadge published={product.isPublished} />
+                        {product.isFeatured ? (
+                          <span className="text-xs text-sand-700">
+                            Featured{product.featuredOrder ? ` · ${product.featuredOrder}` : ""}
+                          </span>
+                        ) : null}
+                      </span>
                     </td>
                     <td className="text-sand-700">
                       {product.updatedAt.toLocaleDateString("en-GB", {

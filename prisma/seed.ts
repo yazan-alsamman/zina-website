@@ -10,6 +10,8 @@ import {
 import { hashPassword } from "../src/lib/auth/password";
 import { processImage } from "../src/lib/media/process";
 import { computeSubtotal, computeTotal, fromCents } from "../src/lib/money";
+import { formatOrderNumber } from "../src/lib/orders/number";
+import { createPublicToken } from "../src/lib/orders/token";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -38,25 +40,54 @@ async function seedAdmin() {
   console.log(`• Created admin ${email}.`);
 }
 
-/** Placeholder product photo: tonal gradient with a serif monogram, through the real pipeline. */
-async function placeholderImage(letter: string, tones: [string, string, string]) {
+type Tones = [string, string, string];
+
+/**
+ * Placeholder product photography through the real media pipeline: a tonal studio backdrop with
+ * either a serif monogram (cover) or a soft still-life silhouette (second image).
+ */
+async function placeholderImage(letter: string, tones: Tones, variant: "monogram" | "still") {
+  const motif =
+    variant === "monogram"
+      ? `<text x="800" y="1220" font-family="Georgia, serif" font-size="760" fill="#ffffff" fill-opacity="0.28" text-anchor="middle">${letter}</text>`
+      : `<ellipse cx="800" cy="1640" rx="520" ry="70" fill="#000" fill-opacity="0.12"/>
+         <rect x="610" y="760" width="380" height="880" rx="56" fill="#ffffff" fill-opacity="0.22"/>
+         <rect x="680" y="560" width="240" height="230" rx="18" fill="#ffffff" fill-opacity="0.32"/>
+         <rect x="650" y="820" width="70" height="760" rx="35" fill="#ffffff" fill-opacity="0.16"/>`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="2000">
     <defs>
-      <radialGradient id="g" cx="30%" cy="22%" r="95%">
+      <radialGradient id="g" cx="${variant === "monogram" ? "30%" : "68%"}" cy="22%" r="95%">
         <stop offset="0" stop-color="${tones[0]}"/><stop offset="0.55" stop-color="${tones[1]}"/><stop offset="1" stop-color="${tones[2]}"/>
       </radialGradient>
     </defs>
     <rect width="1600" height="2000" fill="url(#g)"/>
-    <text x="800" y="1220" font-family="Georgia, serif" font-size="760" fill="#ffffff" fill-opacity="0.28" text-anchor="middle">${letter}</text>
+    ${motif}
   </svg>`;
   const jpeg = await sharp(Buffer.from(svg)).jpeg({ quality: 90 }).toBuffer();
   const processed = await processImage(jpeg, "image/jpeg");
   return prisma.mediaAsset.create({ data: processed });
 }
 
-const SAND: [string, string, string] = ["#f1ede9", "#b8a48f", "#7c6c5e"];
-const MOCHA: [string, string, string] = ["#7c6c5e", "#4a3f35", "#211c18"];
-const MIST: [string, string, string] = ["#ffffff", "#eaeaea", "#b8a48f"];
+const SAND: Tones = ["#f1ede9", "#b8a48f", "#7c6c5e"];
+const MOCHA: Tones = ["#7c6c5e", "#4a3f35", "#211c18"];
+const MIST: Tones = ["#ffffff", "#eaeaea", "#b8a48f"];
+
+type SampleProduct = {
+  slug: string;
+  brand: string;
+  tones: Tones;
+  price: string;
+  rating: number;
+  published: boolean;
+  featured?: number;
+  stock?: number;
+  nameEn: string;
+  nameAr: string;
+  descriptionEn: string;
+  descriptionAr: string;
+  reviewEn: string;
+  reviewAr: string;
+};
 
 async function seedSamples() {
   const brandData = [
@@ -64,6 +95,11 @@ async function seedSamples() {
     { name: "Chanel", slug: "chanel", website: "https://www.chanel.com" },
     { name: "Guerlain", slug: "guerlain", website: "https://www.guerlain.com" },
     { name: "La Mer", slug: "la-mer", website: "https://www.cremedelamer.com" },
+    {
+      name: "Charlotte Tilbury",
+      slug: "charlotte-tilbury",
+      website: "https://www.charlottetilbury.com",
+    },
   ];
   const brands = Object.fromEntries(
     await Promise.all(
@@ -74,42 +110,45 @@ async function seedSamples() {
     ),
   );
 
-  const productData = [
+  // The first four keep their positions: the sample orders below refer to them by index.
+  const productData: SampleProduct[] = [
     {
       slug: "sample-satin-lipstick",
       brand: "dior",
-      letter: "D",
       tones: SAND,
       price: "48.00",
       rating: 4.5,
       published: true,
+      featured: 1,
       nameEn: "Satin Lipstick",
       nameAr: "أحمر شفاه ساتان",
       descriptionEn: "A creamy satin finish with a soft, comfortable feel.",
       descriptionAr: "لمسة ساتان كريمية بإحساس ناعم ومريح.",
       reviewEn:
-        "Glides on like balm and **wears like a stain**.\n\n- Comfortable all day\n- Buildable colour",
-      reviewAr: "ينزلق كالبلسم و**يثبت كالصبغة**.\n\n- مريح طوال اليوم\n- لون قابل للتدرج",
+        "Glides on like balm and wears like a stain. The nude I reach for first.\n\n- Comfortable all day\n- **Buildable** colour, never patchy",
+      reviewAr:
+        "ينزلق كالبلسم ويثبت كالصبغة. اللون النود الذي أختاره أولًا.\n\n- مريح طوال اليوم\n- لون **قابل للتدرّج** دون بقع",
     },
     {
       slug: "sample-eau-de-parfum",
       brand: "chanel",
-      letter: "C",
       tones: MIST,
       price: "165.00",
       rating: 5,
       published: true,
+      featured: 2,
       nameEn: "Eau de Parfum",
       nameAr: "ماء العطر",
       descriptionEn: "Soft iris and warm musk.",
       descriptionAr: "سوسن ناعم ومسك دافئ.",
-      reviewEn: "Quiet, never shy. **Lasts eight hours** on my skin.",
-      reviewAr: "هادئ لكنه حاضر. **يدوم ثماني ساعات** على بشرتي.",
+      reviewEn:
+        "Quiet, never shy. **Lasts eight hours** on my skin and settles into a warm, clean musk.\n\nTwo sprays are enough for a whole evening.",
+      reviewAr:
+        "هادئ لكنه حاضر. **يدوم ثماني ساعات** على بشرتي ويستقر في مسك دافئ ونظيف.\n\nبختان تكفيان لسهرة كاملة.",
     },
     {
       slug: "sample-pressed-powder",
       brand: "guerlain",
-      letter: "G",
       tones: SAND,
       price: "62.00",
       rating: 4,
@@ -124,25 +163,120 @@ async function seedSamples() {
     {
       slug: "sample-renewal-cream",
       brand: "la-mer",
-      letter: "L",
       tones: MOCHA,
       price: "210.00",
       rating: 4.5,
       published: true,
+      featured: 3,
+      stock: 6,
       nameEn: "Renewal Cream",
       nameAr: "كريم التجديد",
       descriptionEn: "Rich without weight.",
       descriptionAr: "غني دون ثقل.",
-      reviewEn: "1. Warm between fingertips\n2. Press, do not rub",
-      reviewAr: "1. دفّئيه بين أطراف الأصابع\n2. اضغطي ولا تفركي",
+      reviewEn:
+        "Rich without weight. My skin looked rested by the second week.\n\n1. Warm between fingertips\n2. Press, do not rub",
+      reviewAr:
+        "غني دون ثقل. بدت بشرتي مرتاحة منذ الأسبوع الثاني.\n\n1. دفّئيه بين أطراف الأصابع\n2. اضغطي ولا تفركي",
+    },
+    {
+      slug: "sample-velvet-blush",
+      brand: "chanel",
+      tones: SAND,
+      price: "58.00",
+      rating: 4.5,
+      published: true,
+      featured: 4,
+      nameEn: "Velvet Blush",
+      nameAr: "أحمر خدود مخملي",
+      descriptionEn: "A sheer wash of colour that melts into the skin.",
+      descriptionAr: "لمسة لون شفافة تذوب في البشرة.",
+      reviewEn:
+        "The flush you get after a walk in the cold. Sheer at first, buildable to a proper glow.",
+      reviewAr: "احمرار الخدّين بعد نزهة في البرد. شفاف في البداية، ويتدرّج إلى توهّج واضح.",
+    },
+    {
+      slug: "sample-lip-glow-oil",
+      brand: "dior",
+      tones: MIST,
+      price: "40.00",
+      rating: 4,
+      published: true,
+      nameEn: "Lip Glow Oil",
+      nameAr: "زيت لمعان الشفاه",
+      descriptionEn: "A cushioning oil with a glassy shine.",
+      descriptionAr: "زيت مريح بلمعان زجاجي.",
+      reviewEn:
+        "Shine without the stickiness. It does not last through lunch, but it is lovely to reapply.",
+      reviewAr: "لمعان دون لزوجة. لا يصمد حتى الغداء، لكن إعادة وضعه متعة.",
+    },
+    {
+      slug: "sample-royal-honey-serum",
+      brand: "guerlain",
+      tones: SAND,
+      price: "120.00",
+      rating: 5,
+      published: true,
+      nameEn: "Royal Honey Serum",
+      nameAr: "سيروم العسل الملكي",
+      descriptionEn: "A golden serum that plumps and smooths.",
+      descriptionAr: "سيروم ذهبي يمنح الامتلاء والنعومة.",
+      reviewEn:
+        "The serum I finished and immediately bought again. Skin feels **bouncy** within days.",
+      reviewAr: "السيروم الذي أنهيته واشتريته مجددًا فورًا. تشعرين بـ**مرونة** البشرة خلال أيام.",
+    },
+    {
+      slug: "sample-soft-eye-balm",
+      brand: "la-mer",
+      tones: MIST,
+      price: "95.00",
+      rating: 3.5,
+      published: true,
+      nameEn: "Soft Eye Balm",
+      nameAr: "بلسم العين الناعم",
+      descriptionEn: "A cooling balm for tired eyes.",
+      descriptionAr: "بلسم منعش للعيون المتعبة.",
+      reviewEn:
+        "Pleasant and cooling, but I expected more for the price. A good balm, not a miracle.",
+      reviewAr: "منعش ولطيف، لكنني توقعت أكثر مقابل السعر. بلسم جيد، لا معجزة.",
+    },
+    {
+      slug: "sample-silk-primer",
+      brand: "charlotte-tilbury",
+      tones: MOCHA,
+      price: "52.00",
+      rating: 4,
+      published: true,
+      stock: 0,
+      nameEn: "Silk Primer",
+      nameAr: "برايمر حريري",
+      descriptionEn: "A blurring base that grips make-up all day.",
+      descriptionAr: "قاعدة تُنعّم البشرة وتثبّت المكياج طوال اليوم.",
+      reviewEn: "Foundation sat better on top of it than on anything else this year.",
+      reviewAr: "ثبت كريم الأساس فوقه أفضل من أي برايمر جربته هذا العام.",
+    },
+    {
+      slug: "sample-satin-bronzer",
+      brand: "guerlain",
+      tones: SAND,
+      price: "70.00",
+      rating: 4.5,
+      published: true,
+      nameEn: "Satin Bronzer",
+      nameAr: "برونزر ساتان",
+      descriptionEn: "Sun-kissed warmth without shimmer.",
+      descriptionAr: "دفء الشمس دون لمعان.",
+      reviewEn: "Warmth that looks like skin, not powder. The brush in the case is a bonus.",
+      reviewAr: "دفء يبدو كالبشرة لا كالبودرة. الفرشاة داخل العلبة إضافة جميلة.",
     },
   ];
 
   const products: Product[] = [];
-  for (const p of productData) {
+  for (const [index, p] of productData.entries()) {
     let product = await prisma.product.findUnique({ where: { slug: p.slug } });
     if (!product) {
-      const asset = await placeholderImage(p.letter, p.tones);
+      const brandName = brandData.find((b) => b.slug === p.brand)!.name;
+      const cover = await placeholderImage(brandName.charAt(0), p.tones, "monogram");
+      const still = await placeholderImage(brandName.charAt(0), p.tones, "still");
       product = await prisma.product.create({
         data: {
           slug: p.slug,
@@ -155,16 +289,21 @@ async function seedSamples() {
           rating: p.rating,
           price: p.price,
           currency: "USD",
+          stock: p.stock ?? null,
           isPublished: p.published,
+          isFeatured: p.featured !== undefined,
+          featuredOrder: p.featured ?? null,
           brandId: brands[p.brand].id,
+          // Spread over the past weeks so "newest" sorting has something to sort.
+          createdAt: new Date(Date.now() - (index + 1) * 3 * 86_400_000),
           images: {
-            create: {
+            create: [cover, still].map((asset, sortOrder) => ({
               assetId: asset.id,
               url: `${asset.dir}/w${Math.max(...asset.widths)}.webp`,
-              sortOrder: 0,
-              altEn: `${p.nameEn} by ${brandData.find((b) => b.slug === p.brand)!.name}`,
-              altAr: p.nameAr,
-            },
+              sortOrder,
+              altEn: `${p.nameEn} by ${brandName}${sortOrder ? ", still life" : ""}`,
+              altAr: `${p.nameAr} من ${brandName}${sortOrder ? "، صورة جانبية" : ""}`,
+            })),
           },
         },
       });
@@ -173,7 +312,7 @@ async function seedSamples() {
   }
 
   type Sample = {
-    number: string;
+    key: string;
     status: OrderStatus;
     country: string;
     city: string;
@@ -192,7 +331,7 @@ async function seedSamples() {
   };
   const samples: Sample[] = [
     {
-      number: "ZM-2026-00101",
+      key: "seed-order-1",
       status: "PENDING_REVIEW",
       country: "AE",
       city: "Dubai",
@@ -209,7 +348,7 @@ async function seedSamples() {
       notes: "Please gift wrap the lipsticks.",
     },
     {
-      number: "ZM-2026-00102",
+      key: "seed-order-2",
       status: "AWAITING_PAYMENT",
       country: "KW",
       city: "Kuwait City",
@@ -224,7 +363,7 @@ async function seedSamples() {
       lines: [[3, 1]],
     },
     {
-      number: "ZM-2026-00103",
+      key: "seed-order-3",
       status: "APPROVED",
       country: "SA",
       city: "Riyadh",
@@ -241,7 +380,7 @@ async function seedSamples() {
       ],
     },
     {
-      number: "ZM-2026-00104",
+      key: "seed-order-4",
       status: "SHIPPED",
       country: "GB",
       city: "London",
@@ -256,7 +395,7 @@ async function seedSamples() {
       tracking: ["DHL Express", "JD014600006104"],
     },
     {
-      number: "ZM-2026-00105",
+      key: "seed-order-5",
       status: "DELIVERED",
       country: "QA",
       city: "Doha",
@@ -271,7 +410,7 @@ async function seedSamples() {
       tracking: ["Aramex", "AX77010105"],
     },
     {
-      number: "ZM-2026-00106",
+      key: "seed-order-6",
       status: "CANCELLED",
       country: "JO",
       city: "Amman",
@@ -296,8 +435,9 @@ async function seedSamples() {
     CANCELLED: ["CANCELLED"],
   };
 
-  for (const s of samples) {
-    if (await prisma.order.findUnique({ where: { orderNumber: s.number } })) continue;
+  // Oldest first, so order numbers rise with dates.
+  for (const s of [...samples].sort((a, b) => b.daysAgo - a.daysAgo)) {
+    if (await prisma.order.findUnique({ where: { idempotencyKey: s.key } })) continue;
     const created = new Date(Date.now() - s.daysAgo * 86_400_000 - 3_600_000 * 5);
     const lines = s.lines.map(([index, quantity]) => ({ product: products[index], quantity }));
     const subtotal = fromCents(
@@ -305,6 +445,7 @@ async function seedSamples() {
     );
     const total = s.fee ? fromCents(computeTotal(subtotal, s.fee)) : null;
     const approved = ["APPROVED", "SHIPPED", "DELIVERED", "AWAITING_PAYMENT"].includes(s.status);
+    const paid = s.payment === "CARD" && ["SHIPPED", "DELIVERED"].includes(s.status);
 
     const steps = path[s.status];
     let previous: OrderStatus = "PENDING_REVIEW";
@@ -340,9 +481,14 @@ async function seedSamples() {
       }),
     ];
 
+    const [{ n }] = await prisma.$queryRaw<Array<{ n: bigint }>>`
+      SELECT nextval('order_number_seq') AS n`;
+
     await prisma.order.create({
       data: {
-        orderNumber: s.number,
+        orderNumber: formatOrderNumber(created.getUTCFullYear(), n),
+        publicToken: createPublicToken(),
+        idempotencyKey: s.key,
         status: s.status,
         customerName: s.name,
         email: s.email,
@@ -360,6 +506,7 @@ async function seedSamples() {
         currency: "USD",
         locale: s.locale,
         approvedAt: approved ? new Date(created.getTime() + 86_400_000 * 0.8) : null,
+        paidAt: paid ? new Date(created.getTime() + 86_400_000 * 1.6) : null,
         trackingNumber: s.tracking?.[1],
         carrier: s.tracking?.[0],
         cancelReason: s.cancelReason,
@@ -367,7 +514,7 @@ async function seedSamples() {
         items: {
           create: lines.map((l) => ({
             productId: l.product.id,
-            productNameSnapshot: `${l.product.nameEn}`,
+            productNameSnapshot: l.product.nameEn,
             unitPrice: l.product.price,
             quantity: l.quantity,
           })),

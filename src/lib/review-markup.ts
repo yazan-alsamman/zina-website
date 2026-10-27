@@ -51,3 +51,34 @@ export function renderReview(markdown: string): string {
 
 /** Allowed output tags, shared with the DOMPurify configuration. */
 export const REVIEW_ALLOWED_TAGS = ["p", "br", "strong", "ul", "ol", "li"];
+
+/**
+ * Plain-text excerpt for cards and meta descriptions: the review's first sentence (or first
+ * line), Markdown markers removed, shortened at a word boundary.
+ */
+export function reviewExcerpt(markdown: string | null | undefined, maxLength = 140): string {
+  if (!markdown) return "";
+  const firstBlock =
+    markdown
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .map((line) => line.replace(/^\s*(?:[-*]|\d+[.)])\s+/, "").trim())
+      .find(Boolean) ?? "";
+  const text = firstBlock.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\s+/g, " ");
+  // First sentence, in Latin or Arabic punctuation.
+  const sentence = text.match(/^.+?[.!?؟۔](?=\s|$)/)?.[0] ?? text;
+  if (sentence.length <= maxLength) return sentence;
+  const cut = sentence.slice(0, maxLength - 1);
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), maxLength * 0.6)).trimEnd()}…`;
+}
+
+/**
+ * The review without the sentence already shown as its pull-quote, when the review literally
+ * starts with it (no Markdown inside that sentence). Otherwise the review is returned as is.
+ */
+export function reviewWithoutLead(markdown: string | null | undefined, lead: string): string {
+  if (!markdown) return "";
+  const text = markdown.replace(/\r\n?/g, "\n").trimStart();
+  if (!lead || !text.startsWith(lead)) return markdown;
+  return text.slice(lead.length).replace(/^[ \t]+/, "");
+}

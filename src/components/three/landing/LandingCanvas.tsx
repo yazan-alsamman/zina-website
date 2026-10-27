@@ -22,6 +22,13 @@ export default function LandingCanvas({ houseNames }: { houseNames: readonly str
   const [webgl] = useState(isWebGLAvailable);
   const maxDpr = tier === "high" ? 2 : 1.5;
 
+  // This component's effects run on the page's own React root, so they see Next.js hiding the
+  // route (Activity) when the visitor navigates away; the R3F root inside the canvas does not.
+  useEffect(() => {
+    useLandingStore.getState().set({ pageVisible: true });
+    return () => useLandingStore.getState().set({ pageVisible: false });
+  }, []);
+
   useEffect(() => {
     const state = useLandingStore.getState();
     // Without WebGL the CSS backdrop stays; let the preloader finish immediately.

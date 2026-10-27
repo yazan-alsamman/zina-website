@@ -2,15 +2,20 @@
 
 ## Environment
 
-| Variable                        | Purpose                                                                                                                                        |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                  | PostgreSQL connection string                                                                                                                   |
-| `NEXT_PUBLIC_SITE_URL`          | Public origin, used for metadata                                                                                                               |
-| `AUTH_SECRET`                   | ≥ 32 random characters; signs admin session cookies (`openssl rand -base64 48`). Rotating it signs every admin out.                            |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | First admin, created by `npm run db:seed` only when no admin exists. Remove `ADMIN_PASSWORD` from the server environment after the first seed. |
-| `UPLOAD_DIR`                    | Where uploaded media is stored (default `./storage/uploads`). Must be on persistent storage and backed up.                                     |
-| `PUBLIC_MEDIA_URL`              | Base URL for media (default `/media`). Read at **build** time too (it is inlined), so set it before `npm run build`.                           |
-| `SEED_SAMPLE_DATA`              | `"true"` seeds sample brands, products and orders. Never in production.                                                                        |
+| Variable                        | Purpose                                                                                                                                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `DATABASE_URL`                  | PostgreSQL connection string                                                                                                                                                               |
+| `NEXT_PUBLIC_SITE_URL`          | Public origin (`https://…`): canonical URLs, sitemap, OG images, tracking links in emails and WhatsApp messages. Set it before `npm run build`.                                            |
+| `AUTH_SECRET`                   | ≥ 32 random characters; signs admin session cookies (`openssl rand -base64 48`). Rotating it signs every admin out.                                                                        |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | First admin, created by `npm run db:seed` only when no admin exists. Remove `ADMIN_PASSWORD` from the server environment after the first seed.                                             |
+| `UPLOAD_DIR`                    | Where uploaded media is stored (default `./storage/uploads`). Must be on persistent storage and backed up.                                                                                 |
+| `PUBLIC_MEDIA_URL`              | Base URL for media (default `/media`). Read at **build** time too (it is inlined), so set it before `npm run build`.                                                                       |
+| `BUSINESS_WHATSAPP`             | The house's WhatsApp number, digits only with country code (e.g. `971500000000`). Without it the WhatsApp buttons are hidden. Product pages are prerendered, so rebuild after changing it. |
+| `ORDER_NOTIFY_EMAIL`            | Where new-order notifications go (optional).                                                                                                                                               |
+| `SMTP_HOST`, `SMTP_PORT`        | SMTP server for order emails. Port 465 uses TLS, anything else STARTTLS. Without `SMTP_HOST`/`SMTP_FROM` emails are skipped and logged.                                                    |
+| `SMTP_USER`, `SMTP_PASS`        | SMTP credentials (optional for unauthenticated relays).                                                                                                                                    |
+| `SMTP_FROM`                     | Sender, e.g. `Zina Al Mokri <orders@example.com>`.                                                                                                                                         |
+| `SEED_SAMPLE_DATA`              | `"true"` seeds sample brands, products and orders. Never in production.                                                                                                                    |
 
 ## First deploy
 
@@ -78,3 +83,19 @@ could spoof its IP to the login rate limiter.
   instances.
 - Unattached uploads (images uploaded to a product form that was never saved) stay on disk.
   A cleanup job for `MediaAsset` rows without `ProductImage` older than a day is a later task.
+
+## Storefront notes
+
+- **Order numbers** come from the PostgreSQL sequence `order_number_seq` (created by the
+  `storefront_checkout` migration). It is not in `schema.prisma`; restore it with the database.
+- **Real 404s**: the proxy checks product slugs and order tracking tokens against the database
+  before rendering (`src/lib/proxy-checks.ts`, its own pool of up to 3 connections). If the
+  database is unreachable it lets the request through and the page decides.
+- **Checkout rate limit** (5 new orders per IP per 10 minutes) is in memory, like the login
+  limiter: move both to Redis or the database before running several instances. It relies on
+  `X-Real-IP` from Nginx.
+- **Emails** are sent after the response (`after()`), never blocking or failing an order. Check the
+  logs for `[email]` lines.
+- **OG image** fonts are read from `src/assets/fonts` relative to the working directory: start the
+  app (`npm run start`) from the project root. Cormorant Garamond is under the SIL OFL
+  (`src/assets/fonts/OFL.txt`).

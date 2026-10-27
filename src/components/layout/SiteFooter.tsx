@@ -18,6 +18,12 @@ const links = [
   { href: "/cart", key: "cart" },
 ] as const;
 
+const legal = [
+  { href: "/shipping", key: "shipping" },
+  { href: "/privacy", key: "privacy" },
+  { href: "/terms", key: "terms" },
+] as const;
+
 export async function SiteFooter() {
   const t = await getTranslations("Footer");
   const nav = await getTranslations("Navigation");
@@ -60,6 +66,21 @@ export async function SiteFooter() {
           </Suspense>
           <p className="text-sm text-sand-200">{t("rights", { year })}</p>
         </div>
+
+        <nav aria-label={t("legalLabel")} className="border-t border-white/15 py-6">
+          <ul className="flex flex-wrap gap-x-8 gap-y-3">
+            {legal.map(({ href, key }) => (
+              <li key={key}>
+                <Link
+                  href={href}
+                  className="text-sm text-sand-200 transition-colors duration-500 ease-luxe hover:text-white"
+                >
+                  {nav(key)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </footer>
   );

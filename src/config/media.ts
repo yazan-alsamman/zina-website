@@ -21,6 +21,12 @@ export const media = {
     alt: { en: "Portrait of Zina Al Mokri", ar: "صورة زينة المقري" },
     tone: "sand",
   },
+  studio: {
+    id: "studio",
+    aspect: "3 / 4",
+    alt: { en: "Zina's review table", ar: "طاولة مراجعات زينة" },
+    tone: "mist",
+  },
   featured: {
     lipstick: {
       id: "featured-lipstick",
@@ -87,6 +93,7 @@ export const media = {
   ],
 } satisfies {
   portrait: MediaSlot;
+  studio: MediaSlot;
   featured: Record<string, MediaSlot>;
   instagram: MediaSlot[];
 };

@@ -2,20 +2,23 @@
 
 ## Environment
 
-| Variable                        | Purpose                                                                                                                                                                                    |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `DATABASE_URL`                  | PostgreSQL connection string                                                                                                                                                               |
-| `NEXT_PUBLIC_SITE_URL`          | Public origin (`https://…`): canonical URLs, sitemap, OG images, tracking links in emails and WhatsApp messages. Set it before `npm run build`.                                            |
-| `AUTH_SECRET`                   | ≥ 32 random characters; signs admin session cookies (`openssl rand -base64 48`). Rotating it signs every admin out.                                                                        |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | First admin, created by `npm run db:seed` only when no admin exists. Remove `ADMIN_PASSWORD` from the server environment after the first seed.                                             |
-| `UPLOAD_DIR`                    | Where uploaded media is stored (default `./storage/uploads`). Must be on persistent storage and backed up.                                                                                 |
-| `PUBLIC_MEDIA_URL`              | Base URL for media (default `/media`). Read at **build** time too (it is inlined), so set it before `npm run build`.                                                                       |
-| `BUSINESS_WHATSAPP`             | The house's WhatsApp number, digits only with country code (e.g. `971500000000`). Without it the WhatsApp buttons are hidden. Product pages are prerendered, so rebuild after changing it. |
-| `ORDER_NOTIFY_EMAIL`            | Where new-order notifications go (optional).                                                                                                                                               |
-| `SMTP_HOST`, `SMTP_PORT`        | SMTP server for order emails. Port 465 uses TLS, anything else STARTTLS. Without `SMTP_HOST`/`SMTP_FROM` emails are skipped and logged.                                                    |
-| `SMTP_USER`, `SMTP_PASS`        | SMTP credentials (optional for unauthenticated relays).                                                                                                                                    |
-| `SMTP_FROM`                     | Sender, e.g. `Zina Al Mokri <orders@example.com>`.                                                                                                                                         |
-| `SEED_SAMPLE_DATA`              | `"true"` seeds sample brands, products and orders. Never in production.                                                                                                                    |
+| Variable                        | Purpose                                                                                                                                                                                               |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                  | PostgreSQL connection string                                                                                                                                                                          |
+| `NEXT_PUBLIC_SITE_URL`          | Public origin (`https://…`): canonical URLs, sitemap, OG images, tracking links in emails and WhatsApp messages. Set it before `npm run build`.                                                       |
+| `AUTH_SECRET`                   | ≥ 32 random characters; signs admin session cookies (`openssl rand -base64 48`). Rotating it signs every admin out.                                                                                   |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | First admin, created by `npm run db:seed` only when no admin exists. Remove `ADMIN_PASSWORD` from the server environment after the first seed.                                                        |
+| `UPLOAD_DIR`                    | Where uploaded media is stored (default `./storage/uploads`). Must be on persistent storage and backed up.                                                                                            |
+| `PUBLIC_MEDIA_URL`              | Base URL for media (default `/media`). Read at **build** time too (it is inlined), so set it before `npm run build`.                                                                                  |
+| `BUSINESS_WHATSAPP`             | The house's WhatsApp number, digits only with country code (e.g. `971500000000`). Without it the WhatsApp buttons are hidden. Product pages are prerendered, so rebuild after changing it.            |
+| `ORDER_NOTIFY_EMAIL`            | Where new-order notifications go (optional).                                                                                                                                                          |
+| `SMTP_HOST`, `SMTP_PORT`        | SMTP server for order emails. Port 465 uses TLS, anything else STARTTLS. Without `SMTP_HOST`/`SMTP_FROM` emails are skipped and logged.                                                               |
+| `SMTP_USER`, `SMTP_PASS`        | SMTP credentials (optional for unauthenticated relays).                                                                                                                                               |
+| `SMTP_FROM`                     | Sender, e.g. `Zina Al Mokri <orders@example.com>`.                                                                                                                                                    |
+| `INSTAGRAM_ACCESS_TOKEN`        | Long-lived Instagram token (see `docs/instagram-setup.md`). Only seeds the token store: the app refreshes it and keeps the current one encrypted in the database. Put a new value here to replace it. |
+| `INSTAGRAM_USER_ID`             | Optional numeric Instagram account id (otherwise `me`).                                                                                                                                               |
+| `CRON_SECRET`                   | ≥ 16 random characters (`openssl rand -hex 32`); authorises `POST /api/cron/instagram`.                                                                                                               |
+| `SEED_SAMPLE_DATA`              | `"true"` seeds sample brands, products and orders. Never in production.                                                                                                                               |
 
 ## First deploy
 
@@ -99,3 +102,18 @@ could spoof its IP to the login rate limiter.
 - **OG image** fonts are read from `src/assets/fonts` relative to the working directory: start the
   app (`npm run start`) from the project root. Cormorant Garamond is under the SIL OFL
   (`src/assets/fonts/OFL.txt`).
+
+## Instagram sync (cron)
+
+`POST /api/cron/instagram` refreshes the Instagram token when due (after ~50 of its 60 days)
+and mirrors the latest 12 posts (images downloaded into `UPLOAD_DIR`). Run it every 6 hours from
+the server's crontab (`crontab -e` as the app user), reading the secret from the same `.env`:
+
+```cron
+0 */6 * * * . /srv/zina/.env && curl -fsS -m 120 -X POST -H "Authorization: Bearer $CRON_SECRET" https://YOUR-DOMAIN/api/cron/instagram > /dev/null
+```
+
+Adjust the path and domain. The endpoint answers 401 without the right bearer secret, 503 if
+`CRON_SECRET` is unset, 200 when synced (or Instagram is not configured yet) and 502 on an API
+error; details also appear on `/admin/instagram`. Without a token the site keeps showing the
+manual posts and placeholders.

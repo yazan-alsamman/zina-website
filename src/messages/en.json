@@ -13,7 +13,8 @@
     "checkout": "Checkout",
     "shipping": "Shipping",
     "privacy": "Privacy",
-    "terms": "Terms"
+    "terms": "Terms",
+    "journal": "Journal"
   },
   "LanguageSwitcher": {
     "label": "Language"
@@ -89,7 +90,10 @@
       "t6": "The shelf edit"
     },
     "open": "Open on Instagram: {caption}",
-    "view": "View"
+    "view": "View",
+    "video": "Video",
+    "album": "Carousel",
+    "journalCta": "See the journal"
   },
   "Footer": {
     "navLabel": "Footer",
@@ -394,5 +398,14 @@
         }
       ]
     }
+  },
+  "Journal": {
+    "title": "The journal",
+    "overline": "On Instagram",
+    "intro": "First impressions, honest follow-ups and what is on Zina's vanity this week, straight from @{handle}.",
+    "open": "Open on Instagram",
+    "emptyTitle": "The journal is arriving soon",
+    "emptyBody": "Follow along on Instagram in the meantime.",
+    "follow": "Follow @{handle}"
   }
 }

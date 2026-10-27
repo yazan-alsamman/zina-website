@@ -87,20 +87,21 @@ model ProductImage {
 /// AVIF + WebP renditions. Files live in `dir`: the metadata-stripped original plus
 /// w{width}.avif / w{width}.webp for every width in `widths`.
 model MediaAsset {
-  id            String         @id @default(cuid())
+  id             String          @id @default(cuid())
   /// Directory relative to UPLOAD_DIR, e.g. "2026/10/clx123abc"
-  dir           String
+  dir            String
   /// File name of the stripped original inside `dir`, e.g. "original.jpg"
-  original      String
-  mime          String
-  width         Int
-  height        Int
-  bytes         Int
+  original       String
+  mime           String
+  width          Int
+  height         Int
+  bytes          Int
   /// Tiny base64 WebP data URI, used as the blur placeholder
-  lqip          String         @db.Text
-  widths        Int[]
-  productImages ProductImage[]
-  createdAt     DateTime       @default(now())
+  lqip           String          @db.Text
+  widths         Int[]
+  productImages  ProductImage[]
+  instagramPosts InstagramPost[]
+  createdAt      DateTime        @default(now())
 }
 
 model Order {
@@ -192,4 +193,46 @@ model AdminUser {
   sessionVersion Int          @default(0)
   orderEvents    OrderEvent[]
   createdAt      DateTime     @default(now())
+}
+
+enum InstagramMediaType {
+  IMAGE
+  VIDEO
+  CAROUSEL_ALBUM
+}
+
+/// A post from @zina.almokri, mirrored by the Instagram sync (or added by hand in the admin).
+/// Images are downloaded into our own media store: Instagram CDN URLs expire.
+model InstagramPost {
+  /// Instagram media id, or "manual_<cuid>" for posts added by hand
+  id                   String             @id
+  caption              String?            @db.Text
+  mediaType            InstagramMediaType
+  permalink            String
+  /// When it was posted on Instagram (UTC)
+  timestamp            DateTime
+  /// Media directory (relative to UPLOAD_DIR) of the image shown; for videos, the poster frame
+  localImagePath       String
+  /// Media directory of the video poster frame (videos only)
+  localVideoPosterPath String?
+  width                Int
+  height               Int
+  likeCount            Int?
+  isHidden             Boolean            @default(false)
+  isManual             Boolean            @default(false)
+  /// Set when a synced post no longer exists on Instagram (it is hidden too)
+  removedAt            DateTime?
+  assetId              String?
+  asset                MediaAsset?        @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  fetchedAt            DateTime           @default(now())
+
+  @@index([isHidden, timestamp])
+  @@index([assetId])
+}
+
+/// Small key/value store for runtime settings (e.g. the current Instagram token and its expiry).
+model AppSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
 }

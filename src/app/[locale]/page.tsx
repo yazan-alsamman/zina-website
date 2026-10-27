@@ -8,12 +8,14 @@ import { OrderingSection } from "@/components/landing/OrderingSection";
 import { Preloader } from "@/components/landing/Preloader";
 import { ScrollRefresh } from "@/components/motion/ScrollRefresh";
 import { getConstellationBrandNames } from "@/lib/brand-names";
+import { getInstagramFeed } from "@/lib/instagram/feed";
 import { getFeaturedProducts } from "@/lib/shop/catalog";
 
 export default async function HomePage() {
-  const [houseNames, featured] = await Promise.all([
+  const [houseNames, featured, instagram] = await Promise.all([
     getConstellationBrandNames(),
     getFeaturedProducts(),
+    getInstagramFeed(6),
   ]);
 
   return (
@@ -27,7 +29,7 @@ export default async function HomePage() {
         <AboutSection />
         <EditSection products={featured} />
         <OrderingSection />
-        <InstagramSection />
+        <InstagramSection posts={instagram} />
       </main>
       <ScrollRefresh />
     </>

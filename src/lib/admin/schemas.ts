@@ -156,3 +156,21 @@ export const paymentUrlSchema = z.object({
 export const cancelSchema = z.object({
   reason: z.string().trim().min(3, "Tell the team why the order is cancelled").max(500),
 });
+
+export const manualPostSchema = z.object({
+  assetId: z.string().min(1, "Upload an image").max(40),
+  caption: optionalText(2200),
+  permalink: z
+    .string()
+    .trim()
+    .refine(
+      (value) =>
+        /^https:\/\/(www\.)?instagram\.com\/(p|reel|tv)\/[A-Za-z0-9_-]+\/?(\?.*)?$/.test(value),
+      "Paste the post link, e.g. https://www.instagram.com/p/ABC123/",
+    ),
+  mediaType: z.enum(["IMAGE", "VIDEO", "CAROUSEL_ALBUM"]),
+  postedOn: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || !Number.isNaN(Date.parse(value)), "Enter a valid date"),
+});

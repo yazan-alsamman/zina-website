@@ -1,17 +1,27 @@
 import { useLocale, useTranslations } from "next-intl";
+import { InstagramTile } from "@/components/instagram/InstagramTile";
 import { MediaFrame } from "@/components/media/MediaFrame";
 import { Magnetic } from "@/components/motion/Magnetic";
 import { RevealGroup } from "@/components/motion/RevealGroup";
 import { SplitReveal } from "@/components/motion/SplitReveal";
 import { media } from "@/config/media";
 import { site } from "@/config/site";
+import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import type { FeedPost } from "@/lib/instagram/feed";
 
 const TILE_KEYS = ["t1", "t2", "t3", "t4", "t5", "t6"] as const;
+const TILES = TILE_KEYS.length;
 
-export function InstagramSection() {
+/**
+ * The latest posts from the Instagram sync (or added by hand in the admin), newest first. Until
+ * there are six, curated placeholder tiles fill the remaining places so the masonry stays whole.
+ */
+export function InstagramSection({ posts }: { posts: readonly FeedPost[] }) {
   const t = useTranslations("Instagram");
   const locale = useLocale() as Locale;
+  const live = posts.slice(0, TILES);
+  const placeholders = media.instagram.slice(live.length, TILES);
 
   return (
     <section
@@ -40,10 +50,15 @@ export function InstagramSection() {
           </Magnetic>
         </div>
 
-        {/* Placeholder posts until the live feed arrives; each opens the real profile. */}
         <RevealGroup as="ul" className="mt-16 columns-2 gap-4 md:mt-20 md:columns-3 md:gap-6">
-          {media.instagram.map((slot, i) => {
-            const caption = t(`tiles.${TILE_KEYS[i]}`);
+          {live.map((post) => (
+            <li key={post.id} data-reveal className="mb-4 break-inside-avoid md:mb-6">
+              <InstagramTile post={post} sizes="(min-width: 768px) 30vw, 45vw" />
+            </li>
+          ))}
+          {/* Placeholders open the real profile. */}
+          {placeholders.map((slot) => {
+            const caption = t(`tiles.${TILE_KEYS[media.instagram.indexOf(slot)]}`);
             return (
               <li key={slot.id} data-reveal className="mb-4 break-inside-avoid md:mb-6">
                 <a
@@ -73,6 +88,15 @@ export function InstagramSection() {
             );
           })}
         </RevealGroup>
+
+        {live.length > 0 ? (
+          <Link
+            href="/journal"
+            className="label mt-6 inline-block border-b border-mocha pb-1 text-mocha md:mt-10"
+          >
+            {t("journalCta")}
+          </Link>
+        ) : null}
       </div>
     </section>
   );

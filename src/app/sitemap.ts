@@ -3,7 +3,7 @@ import { routing } from "@/i18n/routing";
 import { getPublishedProducts } from "@/lib/shop/catalog";
 import { absoluteUrl } from "@/lib/site-url";
 
-const PAGES = ["", "/products", "/about", "/shipping", "/privacy", "/terms"] as const;
+const PAGES = ["", "/products", "/journal", "/about", "/shipping", "/privacy", "/terms"] as const;
 
 /** Every public page in both languages, each entry listing its other-language alternate. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

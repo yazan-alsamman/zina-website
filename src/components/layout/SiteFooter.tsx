@@ -15,6 +15,7 @@ async function getYear() {
 const links = [
   { href: "/products", key: "products" },
   { href: "/about", key: "about" },
+  { href: "/journal", key: "journal" },
   { href: "/cart", key: "cart" },
 ] as const;
 

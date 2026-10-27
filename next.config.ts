@@ -7,7 +7,13 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   // Native / jsdom-based server packages are loaded from node_modules, not bundled.
-  serverExternalPackages: ["sharp", "@node-rs/argon2", "isomorphic-dompurify", "jsdom", "nodemailer"],
+  serverExternalPackages: [
+    "sharp",
+    "@node-rs/argon2",
+    "isomorphic-dompurify",
+    "jsdom",
+    "nodemailer",
+  ],
   env: {
     // Base URL for uploaded media (Nginx in production, the /media route handler otherwise).
     PUBLIC_MEDIA_URL: process.env.PUBLIC_MEDIA_URL ?? "/media",

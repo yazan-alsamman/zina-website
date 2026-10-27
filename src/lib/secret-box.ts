@@ -1,13 +1,16 @@
 import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "node:crypto";
 
 /**
- * AES-256-GCM for secrets stored in the database (the Instagram token). The key is derived
- * from AUTH_SECRET, so a database dump alone does not reveal them. Rotating AUTH_SECRET makes
- * stored secrets unreadable: callers then fall back to the value in the environment.
+ * AES-256-GCM for secrets stored in the database (the Instagram token). The key is derived from
+ * INSTAGRAM_ENCRYPTION_KEY, or from AUTH_SECRET when that is not set, so a database dump alone
+ * does not reveal them. Rotating the key makes stored secrets unreadable: callers then fall back
+ * to the value in the environment.
  */
 function key(): Buffer {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret || secret.length < 32) throw new Error("AUTH_SECRET must be set (32+ characters)");
+  const secret = process.env.INSTAGRAM_ENCRYPTION_KEY || process.env.AUTH_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error("INSTAGRAM_ENCRYPTION_KEY or AUTH_SECRET must be set (32+ characters)");
+  }
   return Buffer.from(hkdfSync("sha256", secret, "zina-al-mokri", "app-settings", 32));
 }
 

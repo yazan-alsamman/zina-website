@@ -1,0 +1,135 @@
+name: Deploy
+
+# Builds the standalone bundle here (never on the VPS), uploads it with rsync to
+# /var/www/zina/releases/<timestamp>-<sha>, then runs deploy/scripts/release.sh on the server:
+# migrations, health-checked switch with zero downtime, automatic rollback (deploy/README.md).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      simulate_health_failure:
+        description: "Make the health check after the switch fail (tests the rollback)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Never two deploys at once; a newer one waits for the running one.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # Secrets cannot be read in a job's `if`, so this job checks that the server is configured.
+  # Until the SSH_HOST secret exists the run ends green with a notice and nothing is built.
+  gate:
+    name: Server configured?
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          if [ -n "$SSH_HOST" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice title=Deploy skipped::The SSH_HOST secret is not set yet, so there is no server to deploy to."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    name: Build and release
+    needs: gate
+    if: needs.gate.outputs.ready == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      # Build-time prerendering reads the catalogue; the CI database is empty and migrated. The
+      # server expires those caches after the switch (POST /api/cron/revalidate).
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: zina
+          POSTGRES_PASSWORD: zina
+          POSTGRES_DB: zina
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U zina -d zina" --health-interval 5s --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://zina:zina@localhost:5432/zina?schema=public
+      # Inlined at build time: must match shared/.env on the server.
+      NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL }}
+      BUSINESS_WHATSAPP: ${{ vars.BUSINESS_WHATSAPP }}
+      PUBLIC_MEDIA_URL: /media
+      NEXT_TELEMETRY_DISABLED: "1"
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.SHA }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run build
+      - name: Assemble the release
+        run: |
+          bash deploy/scripts/bundle.sh release
+          echo "RELEASE=$(date -u +%Y%m%d%H%M%S)-${SHA::7}" >> "$GITHUB_ENV"
+
+      - name: SSH setup
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host zina
+            HostName ${{ secrets.SSH_HOST }}
+            Port ${{ secrets.SSH_PORT }}
+            User ${{ secrets.SSH_USER }}
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ServerAliveInterval 30
+          EOF
+
+      - name: Upload ${{ env.RELEASE }}
+        # Unchanged files are hard-linked from the live release, so only the build is sent.
+        run: >-
+          rsync -az --delete --link-dest=/var/www/zina/current/
+          release/ "zina:/var/www/zina/releases/$RELEASE/"
+
+      - name: Release (migrate, switch, health check, rollback on failure)
+        env:
+          SIMULATE: ${{ inputs.simulate_health_failure && '1' || '0' }}
+        run: >-
+          ssh zina "SIMULATE_HEALTH_FAILURE=$SIMULATE bash
+          /var/www/zina/releases/$RELEASE/deploy/scripts/release.sh $RELEASE"
+
+      - name: Public health check
+        run: |
+          body=$(curl -fsS --retry 5 --retry-delay 3 "${NEXT_PUBLIC_SITE_URL%/}/api/health")
+          echo "$body"
+          [[ $body == *"\"release\":\"$RELEASE\""* ]]
+
+      - name: Clean up
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

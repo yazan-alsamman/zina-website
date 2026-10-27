@@ -228,4 +228,14 @@ describe("stored token encryption", () => {
     process.env.AUTH_SECRET = "b".repeat(48);
     expect(open(sealed)).toBeNull();
   });
+
+  it("prefers INSTAGRAM_ENCRYPTION_KEY over AUTH_SECRET", () => {
+    process.env.AUTH_SECRET = "a".repeat(48);
+    process.env.INSTAGRAM_ENCRYPTION_KEY = "k".repeat(64);
+    const sealed = seal("IGAA-token");
+    process.env.AUTH_SECRET = "b".repeat(48); // rotating the session secret keeps the token
+    expect(open(sealed)).toBe("IGAA-token");
+    delete process.env.INSTAGRAM_ENCRYPTION_KEY;
+    expect(open(sealed)).toBeNull();
+  });
 });

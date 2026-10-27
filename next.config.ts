@@ -4,6 +4,34 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  // Self-contained server bundle (.next/standalone) for the VPS; deploy/scripts/bundle.sh adds
+  // public/ and .next/static next to it.
+  output: "standalone",
+  outputFileTracingIncludes: {
+    // Read at request time by the share image route (src/app/[locale]/opengraph-image.tsx).
+    "/*": ["src/assets/fonts/**/*"],
+  },
+  // Routes that read files under process.cwd() (share images, media) make the tracer include the
+  // whole project. Only the fonts above are read at runtime; public/ is copied by bundle.sh and
+  // uploads live in shared storage on the server, never in a release.
+  outputFileTracingExcludes: {
+    "/*": [
+      "storage/**",
+      "assets/**",
+      "docs/**",
+      "tests/**",
+      "scripts/**",
+      "deploy/**",
+      "prisma/**",
+      "public/**",
+      ".claude/**",
+      "src/{app,components,config,generated,i18n,lib,messages}/**",
+      "*.{md,json,yml,ts,mts,mjs,cjs,tsbuildinfo}",
+    ],
+  },
+  // Nginx compresses (gzip/brotli) and the version banner stays private.
+  compress: false,
+  poweredByHeader: false,
   cacheComponents: true,
   partialPrefetching: true,
   // Native / jsdom-based server packages are loaded from node_modules, not bundled.

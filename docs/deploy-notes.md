@@ -1,5 +1,8 @@
 # Deploy notes
 
+The production setup (VPS, Nginx, PM2, CI/CD, backups) is in [`deploy/README.md`](../deploy/README.md).
+This page lists the environment and the media details.
+
 ## Environment
 
 | Variable                        | Purpose                                                                                                                                                                                               |
@@ -17,10 +20,11 @@
 | `SMTP_FROM`                     | Sender, e.g. `Zina Al Mokri <orders@example.com>`.                                                                                                                                                    |
 | `INSTAGRAM_ACCESS_TOKEN`        | Long-lived Instagram token (see `docs/instagram-setup.md`). Only seeds the token store: the app refreshes it and keeps the current one encrypted in the database. Put a new value here to replace it. |
 | `INSTAGRAM_USER_ID`             | Optional numeric Instagram account id (otherwise `me`).                                                                                                                                               |
+| `INSTAGRAM_ENCRYPTION_KEY`      | Optional, ≥ 32 characters (`openssl rand -hex 32`): key for the Instagram token stored in the database. Defaults to a key derived from `AUTH_SECRET`.                                                 |
 | `CRON_SECRET`                   | ≥ 16 random characters (`openssl rand -hex 32`); authorises `POST /api/cron/instagram`.                                                                                                               |
 | `SEED_SAMPLE_DATA`              | `"true"` seeds sample brands, products and orders. Never in production.                                                                                                                               |
 
-## First deploy
+## First deploy (without the VPS scripts)
 
 ```bash
 npm ci

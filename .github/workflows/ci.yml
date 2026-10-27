@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: zina
+          POSTGRES_PASSWORD: zina
+          POSTGRES_DB: zina
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U zina -d zina" --health-interval 5s --health-timeout 5s
+          --health-retries 10
+    env:
+      # Throwaway CI database and secrets; production values live only on the server.
+      DATABASE_URL: postgresql://zina:zina@localhost:5432/zina?schema=public
+      AUTH_SECRET: ci-only-not-a-secret-ci-only-not-a-secret-0000
+      NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL || 'https://new.zinaalmokri.com' }}
+      BUSINESS_WHATSAPP: ${{ vars.BUSINESS_WHATSAPP }}
+      PUBLIC_MEDIA_URL: /media
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Apply migrations to the CI database
+        run: npx prisma migrate deploy
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
